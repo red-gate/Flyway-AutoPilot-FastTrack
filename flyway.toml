@@ -27,9 +27,6 @@ defaultSchema = "dbo"
 baselineOnMigrate = true
 baselineVersion = "001_20230703120714"
 
-  [flyway.plugins]
-    [flyway.plugins.clean]
-    mode = "all"
 
 [flywayDesktop]
 developmentEnvironment = "development"
