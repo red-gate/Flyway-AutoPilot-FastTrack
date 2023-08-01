@@ -34,7 +34,7 @@ jobs:
       
       # Environment Secrets - In Real Ensure all of the below have been created as an Environment Secret (Projects Settings > Secrets > Actions section, specially related to the environment in question) #
       databaseName: "WidgetZBuild"
-      JDBC: "jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=WidgetZBuild;encrypt=true;integratedSecurity=true;trustServerCertificate=true" 
+      JDBC: "jdbc:sqlserver://localhost;databaseName=WidgetZBuild;encrypt=true;integratedSecurity=true;trustServerCertificate=true" 
 
       displayName: 'Build'
       executeBuild: true
@@ -89,9 +89,9 @@ jobs:
         stage: 'Prod'
         # Environment Secrets - Ensure all of the below have been created as an Environment Secret (Projects Settings > Secrets > Actions section, specially related to the environment in question) #
         databaseName: "WidgetProd"
-        JDBC: "jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=WidgetProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true" 
+        JDBC: "jdbc:sqlserver://localhost;databaseName=WidgetProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true" 
 
-        check_JDBC: "jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=WidgetZCheck;encrypt=true;integratedSecurity=true;trustServerCertificate=true" 
+        check_JDBC: "jdbc:sqlserver://localhost;databaseName=WidgetZCheck;encrypt=true;integratedSecurity=true;trustServerCertificate=true" 
         
         # End of Environment Secrets #
         generateDriftAndChangeReport: true
