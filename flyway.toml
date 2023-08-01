@@ -14,7 +14,7 @@ displayName = "Shadow database"
 provisioner = "clean"
 
 [environments.production]
-url = "jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=WidgetProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=WidgetProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 schemas = [ ]
 displayName = "Production"
 
