@@ -134,7 +134,7 @@ jobs:
     env:
       stage: 'Prod'
       databaseName: "WidgetProd"
-      JDBC: "jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=WidgetProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true" 
+      JDBC: "jdbc:sqlserver://localhost;databaseName=WidgetProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true" 
       
       pauseForCodeReview: true
  
