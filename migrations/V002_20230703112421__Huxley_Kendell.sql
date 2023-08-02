@@ -1,0 +1,14 @@
+﻿SET NUMERIC_ROUNDABORT OFF
+GO
+SET ANSI_PADDING, ANSI_WARNINGS, CONCAT_NULL_YIELDS_NULL, ARITHABORT, QUOTED_IDENTIFIER, ANSI_NULLS ON
+GO
+PRINT N'Creating [dbo].[CurrentPrices]'
+GO
+
+CREATE   VIEW [dbo].[CurrentPrices]
+	AS
+	SELECT WidgetID, Price, Description
+	FROM Widgets INNER JOIN
+		WidgetPrices ON Widgets.RecordID = WidgetPrices.WidgetID
+GO
+
