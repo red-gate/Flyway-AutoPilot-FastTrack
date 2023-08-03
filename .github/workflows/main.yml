@@ -108,7 +108,7 @@ jobs:
         - name: Create Check Reports
           if: env.generateDriftAndChangeReport == 'true'
           run: |
-            flyway -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" check -dryrun -changes -drift -check.failOnDrift="${{ env.failReleaseIfDriftDetected }}" -check.buildUrl="${{ env.check_JDBC }}" -check.buildUser="${{ env.check_userName }}" -check.buildPassword="${{ env.check_password }}" -url="${{ env.JDBC }}" -check.reportFilename="${{ GITHUB.WORKSPACE }}\reports\${{ env.databaseName }}-Run-${{ GITHUB.RUN_ID }}-Check-Report.html" -errorOverrides="S0001:0:I-"
+            flyway -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" check -dryrun -changes -drift "-check.failOnDrift=${{ env.failReleaseIfDriftDetected }}" "-check.buildUrl=${{ env.check_JDBC }}" "-check.buildUser=${{ env.check_userName }}" "-check.buildPassword=${{ env.check_password }}" -url="${{ env.JDBC }}" "-check.reportFilename=${{ GITHUB.WORKSPACE }}\reports\${{ env.databaseName }}-Run-${{ GITHUB.RUN_ID }}-Check-Report.html" -errorOverrides="S0001:0:I-"
           continue-on-error: true
  
          # Create a directory to stage the artifact files
