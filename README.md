@@ -7,4 +7,4 @@ Flyway Autopilot allows you to trial an end-to-end database development and auto
 5. A pipeline for Continuous Integration and Continuous Deployments (CI/CD) to your sample databases
 6. Reports to provide more visibility and safety checks integrated into the pipeline 
 
-Check out the [documentation to get started]([https://documentation.red-gate.com/fd/quickstart-flyway-autopilot-215154689.html)https://documentation.red-gate.com/fd/quickstart-flyway-autopilot-215154689.html].
+**Check out the [documentation to get started](https://documentation.red-gate.com/fd/quickstart-flyway-autopilot-215154689.html)**.
