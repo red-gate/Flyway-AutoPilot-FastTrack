@@ -108,7 +108,7 @@ jobs:
         - name: Create Check Reports
           if: env.generateDriftAndChangeReport == 'true'
           run: |
-            flyway -baselineOnMigrate="true" "-plugins.clean.mode=default" -schemas="dbo" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" check -dryrun -changes -drift "-check.failOnDrift=${{ env.failReleaseIfDriftDetected }}" "-check.buildUrl=${{ env.check_JDBC }}" "-check.buildUser=" "-check.buildPassword=" -url="${{ env.JDBC }}" "-check.reportFilename=C:\Users\redgate\Desktop\Report\${{ env.databaseName }}-Run-${{ GITHUB.RUN_ID }}-Check-Report.html" -errorOverrides="S0001:0:I-"
+            flyway -baselineOnMigrate="true" "-plugins.clean.mode=default" -schemas="dbo" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" check -dryrun -changes -drift "-check.failOnDrift=${{ env.failReleaseIfDriftDetected }}" "-check.buildUrl=${{ env.check_JDBC }}" "-check.buildUser=" "-check.buildPassword=" -url="${{ env.JDBC }}" "-check.reportFilename=${{ GITHUB.WORKSPACE }}\${{ env.databaseName }}-Run-${{ GITHUB.RUN_ID }}-Check-Report.html" -errorOverrides="S0001:0:I-"
           continue-on-error: true
  
         - name: Publish Check Report as Artifact
