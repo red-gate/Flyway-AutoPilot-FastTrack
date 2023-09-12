@@ -1,4 +1,12 @@
-[flywayDesktop]
+flywayDesktop = { }
 
 [redgateCompare]
 filterFile = "filter.rgf"
+
+[environments.development]
+user = "sql-admin"
+password = "${localSecret.Flyway Desktop 3af046f1-24ca-4ca5-a001-6c2252a58c0c}"
+
+[environments.shadow]
+user = "sql-admin"
+password = "${localSecret.Flyway Desktop 94bea788-cb6c-48fc-adc0-78ace4b10b00}"

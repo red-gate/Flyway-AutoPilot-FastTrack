@@ -3,12 +3,11 @@ name = "FlywayTrialProject"
 databaseType = "SqlServer"
 
 [environments.development]
-url = "jdbc:sqlserver://localhost;databaseName=WidgetDev;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
-schemas = [ ]
+url = "jdbc:sqlserver://axlbiserver-test.database.windows.net;authentication=sqlPassword;databaseName=WidgetDev;encrypt=true;trustServerCertificate=true"
 displayName = "Development database"
 
 [environments.shadow]
-url = "jdbc:sqlserver://localhost;databaseName=WidgetZShadow;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://axlbiserver-test.database.windows.net;authentication=sqlPassword;databaseName=WidgetZShadow;encrypt=true;trustServerCertificate=true"
 displayName = "Shadow"
 
 [environments.production]
