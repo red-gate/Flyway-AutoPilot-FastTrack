@@ -8,7 +8,7 @@ AS
 BEGIN
 	SELECT w.RecordID,
            w.Description,
-		   wp.Price
-	FROM Widgets w INNER JOIN dbo.WidgetPrices wp ON wp.RecordID = w.RecordID
+		   p.Price
+	FROM Widgets w INNER JOIN dbo.WidgetPrices p ON p.RecordID = w.RecordID
 END
 GO

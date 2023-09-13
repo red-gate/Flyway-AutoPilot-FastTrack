@@ -182,6 +182,64 @@
       "operation": "info",
       "exception": null,
       "licenseFailed": false
+    },
+    {
+      "initialSchemaVersion": "001.20230703120714",
+      "targetSchemaVersion": "006.20230912063339",
+      "schemaName": "",
+      "migrations": [
+        {
+          "category": "Versioned",
+          "version": "002.20230703112421",
+          "description": "Huxley Kendell",
+          "type": "SQL",
+          "filepath": "C:\\Users\\david.zheng\\source\\repos\\Flyway-AutoPilot\\migrations\\V002_20230703112421__Huxley_Kendell.sql",
+          "executionTime": 152
+        },
+        {
+          "category": "Versioned",
+          "version": "003.20230712152932",
+          "description": "NewProc-dbo-GetAllWidgets",
+          "type": "SQL",
+          "filepath": "C:\\Users\\david.zheng\\source\\repos\\Flyway-AutoPilot\\migrations\\V003_20230712152932__NewProc-dbo-GetAllWidgets.sql",
+          "executionTime": 158
+        },
+        {
+          "category": "Versioned",
+          "version": "004.20230718170924",
+          "description": "NewStatesTable",
+          "type": "SQL",
+          "filepath": "C:\\Users\\david.zheng\\source\\repos\\Flyway-AutoPilot\\migrations\\V004_20230718170924__NewStatesTable.sql",
+          "executionTime": 179
+        },
+        {
+          "category": "Versioned",
+          "version": "005.20230801210409",
+          "description": "stephanie herr",
+          "type": "SQL",
+          "filepath": "C:\\Users\\david.zheng\\source\\repos\\Flyway-AutoPilot\\migrations\\V005_20230801210409__stephanie_herr.sql",
+          "executionTime": 190
+        },
+        {
+          "category": "Versioned",
+          "version": "006.20230912063339",
+          "description": "david zhengProc-GetAWidgets-addPrice",
+          "type": "SQL",
+          "filepath": "C:\\Users\\david.zheng\\source\\repos\\Flyway-AutoPilot\\migrations\\V006_20230912063339__david_zhengProc-GetAWidgets-addPrice.sql",
+          "executionTime": 135
+        }
+      ],
+      "migrationsExecuted": 5,
+      "success": true,
+      "flywayVersion": "9.21.2",
+      "database": "WidgetProd",
+      "warnings": [
+        "outOfOrder mode is active. Migration of schema [dbo] may not be reproducible."
+      ],
+      "timestamp": "2023-09-12T09:54:13.582956",
+      "operation": "migrate",
+      "exception": null,
+      "licenseFailed": false
     }
   ]
 }

@@ -11,8 +11,7 @@ url = "jdbc:sqlserver://axlbiserver-test.database.windows.net;authentication=sql
 displayName = "Shadow"
 
 [environments.production]
-url = "jdbc:sqlserver://localhost;databaseName=WidgetProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
-schemas = [ ]
+url = "jdbc:sqlserver://axlbiserver-test.database.windows.net;authentication=sqlPassword;databaseName=WidgetProd;encrypt=true;trustServerCertificate=true"
 displayName = "Production"
 
 [flyway]
