@@ -240,6 +240,32 @@
       "operation": "migrate",
       "exception": null,
       "licenseFailed": false
+    },
+    {
+      "initialSchemaVersion": "006.20230912063339",
+      "targetSchemaVersion": "007.20230913142244",
+      "schemaName": "",
+      "migrations": [
+        {
+          "category": "Versioned",
+          "version": "007.20230913142244",
+          "description": "david zheng",
+          "type": "SQL",
+          "filepath": "C:\\Users\\david.zheng\\source\\repos\\Flyway-AutoPilot\\migrations\\V007_20230913142244__david_zheng.sql",
+          "executionTime": 188
+        }
+      ],
+      "migrationsExecuted": 1,
+      "success": true,
+      "flywayVersion": "9.21.2",
+      "database": "WidgetProd",
+      "warnings": [
+        "outOfOrder mode is active. Migration of schema [dbo] may not be reproducible."
+      ],
+      "timestamp": "2023-09-17T11:55:01.677601100",
+      "operation": "migrate",
+      "exception": null,
+      "licenseFailed": false
     }
   ]
 }
