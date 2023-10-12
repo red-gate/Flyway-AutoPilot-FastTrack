@@ -1,0 +1,151 @@
+# This is a basic workflow to help you get started with Actions
+ 
+name: reporting-Workflow
+ 
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "release" branch
+  #push:
+    #branches:
+      #- release
+      #- 'migrations/**'
+ 
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+ 
+env:
+ 
+  FLYWAY_LICENSE_KEY: ${{ secrets.FLYWAY_LICENSE_KEY }} #Repository Secret - Create this within the Projects Settings > Secrects > Actions section
+  # If the first undo script is U002, this will validate all undo scripts up to and including that
+  FIRST_UNDO_SCRIPT: "002.20230703112421"
+  # Enable this for additional debug logging
+  ACTIONS_RUNNER_DEBUG: true 
+ 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    name: Deploy Build
+    # The type of runner that the job will run on
+    runs-on: self-hosted
+    environment: 'build' #Ensure this environment name is setup in the projects Settings>Environment area. Ensuring any reviewers are also configured 
+    env:
+      stage: 'Build'
+      
+      # Environment Secrets - In Real Ensure all of the below have been created as an Environment Secret (Projects Settings > Secrets > Actions section, specially related to the environment in question) #
+      databaseName: "WidgetZBuild"
+      JDBC: "jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=WidgetZBuild;encrypt=true;integratedSecurity=true;trustServerCertificate=true" 
+
+      displayName: 'Build'
+      executeBuild: true
+      publishArtifacts: true
+ 
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+      
+      # Runs the Flyway Clean command against the Build database
+      - name: Clean Build DB
+        if: env.executeBuild == 'true'
+        run: |
+          flyway -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.conf" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" info clean info -url="${{ env.JDBC }}" -cleanDisabled='false' -reportFilename="Reports\CleanDB"
+        
+      # Runs the Flyway Migrate command against the Build database
+      - name: Migrate Build DB
+        if: env.executeBuild == 'true'
+        run: |
+          flyway -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.conf" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" info migrate info -url="${{ env.JDBC }}" -cleanDisabled='false' -reportFilename="Reports\ValidateVScripts"
+          
+      # Runs the Flyway Undo command against the Build database
+      - name: undo Build DB
+        if: env.executeBuild == 'true'
+        run: |
+          flyway -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.conf" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" info undo info -url="${{ env.JDBC }}" -cleanDisabled='false' -target="${{ env.FIRST_UNDO_SCRIPT }}" -reportFilename="Reports/ValidateUScripts"
+ 
+       # Create a directory to stage the artifact files
+      - name: Stage files for publishing
+        if: env.publishArtifacts == 'true'
+        run: |
+          cp -R ${{ GITHUB.WORKSPACE }}/migrations Artifact_Files/Migration/
+ 
+      
+      #After migration scripts are validated, publish them as an artifact
+      - name: Publish Validated Migration Scripts as Artifact
+        if: env.publishArtifacts == 'true'
+        uses: actions/upload-artifact@v2
+        with: 
+          name: flyway-build-artifact
+          path: Artifact_Files/Migration/
+ 
+  prod-preparation:
+      name: Production Deployment Preparation - Report Creation
+      # The type of runner that the job will run on
+      runs-on: self-hosted
+      environment: 'prod' #Ensure this environment name is setup in the projects Settings>Environment area. Ensuring any reviewers are also configured
+      if: ${{ true }} #Set this variable to false to temporarily disable the job
+      needs: build
+      env:
+        stage: 'Prod'
+        # Environment Secrets - Ensure all of the below have been created as an Environment Secret (Projects Settings > Secrets > Actions section, specially related to the environment in question) #
+        databaseName: "WidgetProd"
+        JDBC: "jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=WidgetProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true" 
+
+        check_JDBC: "jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=WidgetZCheck;encrypt=true;integratedSecurity=true;trustServerCertificate=true" 
+        
+        # End of Environment Secrets #
+        generateDriftAndChangeReport: true
+        failReleaseIfDriftDetected: false
+        staticCodeAnalysis: false #Currently not setup in this pipeline
+        publishArtifacts: true
+ 
+      # Steps represent a sequence of tasks that will be executed as part of the job
+      steps:
+        # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+        - uses: actions/checkout@v3
+          
+        # Runs the Flyway Check command, to produce a deployment report, against the Production database
+        - name: Create Check Reports
+          if: env.generateDriftAndChangeReport == 'true'
+          run: |
+            flyway -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.conf" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" check -dryrun -changes -drift "-check.failOnDrift=${{ env.failReleaseIfDriftDetected }}" "-check.buildUrl=${{ env.check_JDBC }}" "-check.buildUser=${{ env.check_userName }}" "-check.buildPassword=${{ env.check_password }}" -url="${{ env.JDBC }}" "-check.reportFilename=${{ GITHUB.WORKSPACE }}\reports\${{ env.databaseName }}-Run-${{ GITHUB.RUN_ID }}-Check-Report.html"
+          continue-on-error: true
+ 
+         # Create a directory to stage the artifact files
+        - name: Stage files for publishing
+          if: env.publishArtifacts == 'true'
+          run: |
+            cp -R ${{ GITHUB.WORKSPACE }}\reports Artifact_Files/Reports/
+ 
+        - name: Publish Check Report as Artifact
+          uses: actions/upload-artifact@v2
+          with: 
+            name: flyway-reports
+            path: Artifact_Files/Reports/
+ 
+ 
+  prod:
+    name: Deploy Production
+    # The type of runner that the job will run on
+    runs-on: self-hosted
+    environment: 'prod' #Ensure this environment name is setup in the projects Settings>Environment area. Ensuring any reviewers are also configured 
+    if: ${{ true }} #Set this variable to false to temporarily disable the job
+    needs: prod-preparation
+    env:
+      stage: 'Prod'
+      databaseName: "WidgetProd"
+      JDBC: "jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=WidgetProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true" 
+      
+      pauseForCodeReview: true
+ 
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+        
+      # Runs the Flyway Migrate against the Production database
+      - name: Migrate Build DB
+        if: ${{ true }}
+        run: |
+          flyway -user="${{ env.userName }}" -password="${{ env.password }}" -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.conf" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" info migrate info -url="${{ env.JDBC }}" -cleanDisabled='false'
+          echo test, and deploy your project.
