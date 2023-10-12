@@ -8,7 +8,7 @@ CREATE TABLE [dbo].[WidgetPrices]
 (
 [RecordID] [int] NOT NULL IDENTITY(1, 1),
 [WidgetID] [int] NULL,
-[Price] DECIMAL(19, 4) NULL
+[Price] [money] NULL
 )
 GO
 PRINT N'Creating primary key [PK_WidgetPrices] on [dbo].[WidgetPrices]'
