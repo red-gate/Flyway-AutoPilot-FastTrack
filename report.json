@@ -182,6 +182,32 @@
       "operation": "info",
       "exception": null,
       "licenseFailed": false
+    },
+    {
+      "initialSchemaVersion": "001.20230703120714",
+      "targetSchemaVersion": "002.20230703112421",
+      "schemaName": "",
+      "migrations": [
+        {
+          "category": "Versioned",
+          "version": "002.20230703112421",
+          "description": "Huxley Kendell",
+          "type": "SQL",
+          "filepath": "C:\\Users\\redgate\\Desktop\\FWAP\\migrations\\V002_20230703112421__Huxley_Kendell.sql",
+          "executionTime": 32
+        }
+      ],
+      "migrationsExecuted": 1,
+      "success": true,
+      "flywayVersion": "9.21.1",
+      "database": "WidgetProd",
+      "warnings": [
+        "outOfOrder mode is active. Migration of schema [dbo] may not be reproducible."
+      ],
+      "timestamp": "2023-11-23T09:49:56.143958900",
+      "operation": "migrate",
+      "exception": null,
+      "licenseFailed": false
     }
   ]
 }

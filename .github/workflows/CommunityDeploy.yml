@@ -1,0 +1,142 @@
+# This is a basic workflow to help you get started with Actions
+ 
+name: Community-Workflow
+ 
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "release" branch
+  #push:
+    #branches:
+      #- release
+      #- 'migrations/**'
+ 
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+ 
+env:
+ 
+  # Enable this for additional debug logging
+  ACTIONS_RUNNER_DEBUG: true 
+ 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    name: Deploy Build
+    # The type of runner that the job will run on
+    runs-on: self-hosted
+    environment: 'build' #Ensure this environment name is setup in the projects Settings>Environment area. Ensuring any reviewers are also configured 
+    env:
+      stage: 'Build'
+      
+      # Environment Secrets - In Real Ensure all of the below have been created as an Environment Secret (Projects Settings > Secrets > Actions section, specially related to the environment in question) #
+      databaseName: "WidgetZBuild"
+      JDBC: "jdbc:sqlserver://localhost;databaseName=WidgetZBuild;encrypt=true;integratedSecurity=true;trustServerCertificate=true" 
+
+      displayName: 'Build'
+      executeBuild: true
+      publishArtifacts: true
+ 
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+      
+      # Runs the Flyway Clean command against the Build database
+      - name: Clean Build DB
+        if: env.executeBuild == 'true'
+        run: |
+          flyway -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.conf" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" info clean info -url="${{ env.JDBC }}" -cleanDisabled='false' -reportFilename="Reports\CleanDB"
+        
+      # Runs the Flyway Migrate command against the Build database
+      - name: Migrate Build DB
+        if: env.executeBuild == 'true'
+        run: |
+          flyway -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.conf" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" info migrate info -url="${{ env.JDBC }}" -cleanDisabled='false' -reportFilename="Reports\ValidateVScripts"
+          
+ 
+
+  CodeCheck:
+    name: Code Anaylsis
+    # The type of runner that the job will run on
+    runs-on: self-hosted
+    needs: build
+    environment: 'Build' #Ensure this environment name is setup in the projects Settings>Environment area. Ensuring any reviewers are also configured 
+    if: ${{ true }} #Set this variable to false to temporarily disable the job
+    env:
+      stage: 'BuildCodeCheck'
+      databaseName: "WidgetBuild"
+      JDBC: "jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=WidgetTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true" 
+      pauseForCodeReview: true
+ 
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+        
+      # Runs the Flyway Migrate against the Production database
+      - name: Migrate Build DB
+        if: ${{ true }}
+        run: |
+          flyway -user="${{ env.userName }}" -password="${{ env.password }}" -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.conf" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" info migrate info -url="${{ env.JDBC }}" -cleanDisabled='false'
+
+      - name: Install SQL Fluff
+        if: ${{ true }}
+        run: |
+          ${{ GITHUB.WORKSPACE }}\Scripts\pip.exe install sqlfluff==1.2.1'
+      
+      - name: Check Code
+        run: |
+          flyway check -code -user="${{ env.userName }}" -password="${{ env.password }}" -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.conf" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" -url="${{ env.JDBC }}" -cleanDisabled='false'
+
+          
+
+
+  Test:
+    name: Deploy Test
+    # The type of runner that the job will run on
+    runs-on: self-hosted
+    needs: build
+    environment: 'Test' #Ensure this environment name is setup in the projects Settings>Environment area. Ensuring any reviewers are also configured 
+    if: ${{ true }} #Set this variable to false to temporarily disable the job
+    env:
+      stage: 'Test'
+      databaseName: "WidgetTest"
+      JDBC: "jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=WidgetTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true" 
+      pauseForCodeReview: true
+ 
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+        
+      # Runs the Flyway Migrate against the Production database
+      - name: Migrate Build DB
+        if: ${{ true }}
+        run: |
+          flyway -user="${{ env.userName }}" -password="${{ env.password }}" -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.conf" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" info migrate info -url="${{ env.JDBC }}" -cleanDisabled='false'
+
+
+  prod:
+    name: Deploy Production
+    # The type of runner that the job will run on
+    runs-on: self-hosted
+    needs: Test
+    environment: 'prod' #Ensure this environment name is setup in the projects Settings>Environment area. Ensuring any reviewers are also configured 
+    if: ${{ true }} #Set this variable to false to temporarily disable the job
+    env:
+      stage: 'Prod'
+      databaseName: "WidgetProd"
+      JDBC: "jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=WidgetProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true" 
+      pauseForCodeReview: true
+ 
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+        
+      # Runs the Flyway Migrate against the Production database
+      - name: Migrate Build DB
+        if: ${{ true }}
+        run: |
+          flyway -user="${{ env.userName }}" -password="${{ env.password }}" -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.conf" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" info migrate info -url="${{ env.JDBC }}" -cleanDisabled='false'
