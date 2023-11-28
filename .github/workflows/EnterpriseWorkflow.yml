@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
  
-name: Main-Workflow
+name: Enterprise-Workflow
  
 # Controls when the workflow will run
 on:
@@ -56,6 +56,8 @@ jobs:
         if: env.executeBuild == 'true'
         run: |
           flyway -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.conf" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" info migrate info -url="${{ env.JDBC }}" -cleanDisabled='false' -reportFilename="Reports\ValidateVScripts"
+
+
           
       # Runs the Flyway Undo command against the Build database
       - name: undo Build DB
@@ -103,13 +105,17 @@ jobs:
       steps:
         # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
         - uses: actions/checkout@v3
-        
+
+        - name: Install SQL Fluff
+          if: ${{ true }}
+          run: |
+            ${{ GITHUB.WORKSPACE }}\Scripts\pip.exe install sqlfluff==1.2.1
           
         # Runs the Flyway Check command, to produce a deployment report, against the Production database
         - name: Create Check Reports
           if: env.generateDriftAndChangeReport == 'true'
           run: |
-            flyway -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.conf" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" check -dryrun -changes -drift "-check.failOnDrift=${{ env.failReleaseIfDriftDetected }}" "-check.buildUrl=${{ env.check_JDBC }}" "-check.buildUser=${{ env.check_userName }}" "-check.buildPassword=${{ env.check_password }}" -url="${{ env.JDBC }}" "-reportFilename=${{ GITHUB.WORKSPACE }}\reports\${{ env.databaseName }}-Run-${{ GITHUB.RUN_ID }}-Check-Report.html"
+            flyway -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.conf" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" check -dryrun -changes -code -drift "-check.failOnDrift=${{ env.failReleaseIfDriftDetected }}" "-check.buildUrl=${{ env.check_JDBC }}" "-check.buildUser=${{ env.check_userName }}" "-check.buildPassword=${{ env.check_password }}" -url="${{ env.JDBC }}" "-reportFilename=${{ GITHUB.WORKSPACE }}\reports\${{ env.databaseName }}-Run-${{ GITHUB.RUN_ID }}-Check-Report.html"
           continue-on-error: true
  
          # Create a directory to stage the artifact files
