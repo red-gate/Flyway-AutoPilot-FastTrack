@@ -1,4 +1,4 @@
-Flyway Autopilot allows you to trial an end-to-end database development and automated deployment process with very little setup.  With Flyway AutoPilot, you get: 
+Flyway Autopilot allows you to trial an end-to-end database development and automated deployment process with next to no setup.  With Flyway AutoPilot, you get: 
 
 1. A SQL script to create ready-to-use sample databases, with the ability to test additional objects and scenarios
 2. A pre-configured Flyway project to get started quickly
