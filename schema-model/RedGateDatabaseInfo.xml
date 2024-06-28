@@ -5,7 +5,7 @@
   <DefaultUser>dbo</DefaultUser>
   <DefaultFilegroup>PRIMARY</DefaultFilegroup>
   <DatabaseVersion>13</DatabaseVersion>
-  <ServerVersion>13.0.5893.48</ServerVersion>
+  <ServerVersion>13.0</ServerVersion>
   <CompatibilityLevel>130</CompatibilityLevel>
   <EngineEdition>Enterprise</EngineEdition>
   <IsAzure>False</IsAzure>
@@ -63,6 +63,7 @@
     </Prefixes>
     <DataWriteAllFilesInOneDirectory>True</DataWriteAllFilesInOneDirectory>
   </WriteToFileOptions>
+  <DefaultCollation>Latin1_General_CI_AS</DefaultCollation>
   <DataFileSet>
     <Count>0</Count>
   </DataFileSet>
