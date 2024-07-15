@@ -17,7 +17,7 @@ env:
  
   FLYWAY_LICENSE_KEY: ${{ secrets.FLYWAY_LICENSE_KEY }} #Repository Secret - Create this within the Projects Settings > Secrects > Actions section
   # If the first undo script is U002, this will validate all undo scripts up to and including that
-  FIRST_UNDO_SCRIPT: "002.20230703112421"
+  FIRST_UNDO_SCRIPT: "002"
   # Enable this for additional debug logging
   ACTIONS_RUNNER_DEBUG: true 
  
