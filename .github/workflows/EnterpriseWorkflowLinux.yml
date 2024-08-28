@@ -27,7 +27,7 @@ jobs:
       stage: 'Build'
       # Environment Secrets - In Real Ensure all of the below have been created as an Environment Secret (Projects Settings > Secrets > Actions section, specially related to the environment in question) #
       databaseName: "WidgetZBuild"
-      JDBC: "jdbc:sqlserver://mconitor.swedencentral.cloudapp.azure.com;authentication=sqlPassword;databaseName=Autopilot_Build;encrypt=true;trustServerCertificate=true;user=coha;password=MarkoMarko1234"
+      JDBC: "jdbc:sqlserver://localhost;databaseName=WidgetZBuild;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
  
       displayName: 'Build'
       executeBuild: true
