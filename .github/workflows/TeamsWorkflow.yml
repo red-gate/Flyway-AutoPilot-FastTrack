@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
  
-name: Enterprise-Workflow
+name: Teams-Workflow
  
 # Controls when the workflow will run
 on:
@@ -91,12 +91,9 @@ jobs:
         stage: 'Prod'
         # Environment Secrets - Ensure all of the below have been created as an Environment Secret (Projects Settings > Secrets > Actions section, specially related to the environment in question) #
         databaseName: "WidgetProd"
-        JDBC: "jdbc:sqlserver://localhost;databaseName=WidgetProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true" 
-
-        check_JDBC: "jdbc:sqlserver://localhost;databaseName=WidgetZCheck;encrypt=true;integratedSecurity=true;trustServerCertificate=true" 
-        
+        JDBC: "jdbc:sqlserver://localhost;databaseName=WidgetProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true"         
         # End of Environment Secrets #
-        generateDriftAndChangeReport: true
+        generateDryRunReport: true
         failReleaseIfDriftDetected: false
         staticCodeAnalysis: false #Currently not setup in this pipeline
         publishArtifacts: true
@@ -108,9 +105,9 @@ jobs:
           
         # Runs the Flyway Check command, to produce a deployment report containing a dry run output
         - name: Create Check Reports
-          if: env.generateDriftAndChangeReport == 'true'
+          if: env.generateDryRunReport == 'true'
           run: |
-            flyway -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" check -dryrun migrate info "-check.failOnDrift=${{ env.failReleaseIfDriftDetected }}" "-check.buildUrl=${{ env.check_JDBC }}" "-check.buildUser=${{ env.check_userName }}" "-check.buildPassword=${{ env.check_password }}" -url="${{ env.JDBC }}" "-reportFilename=${{ GITHUB.WORKSPACE }}\reports\${{ env.databaseName }}-Run-${{ GITHUB.RUN_ID }}-Check-Report.html"
+            flyway -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" check -dryrun migrate info "-check.failOnDrift=${{ env.failReleaseIfDriftDetected }}" "-check.buildUrl=${{ env.check_JDBC }}" -url="${{ env.JDBC }}" "-reportFilename=${{ GITHUB.WORKSPACE }}\reports\${{ env.databaseName }}-Run-${{ GITHUB.RUN_ID }}-Check-Report.html"
           continue-on-error: true
  
          # Create a directory to stage the artifact files
