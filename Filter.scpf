@@ -1,6 +1,11 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!--
+SQL Compare
+SQL Compare
+Version:14.7.8.21163-->
 <NamedFilter version="1" type="SQLCompareFilter">
-  <FilterName>Filter</FilterName>
+  <!--This filter can be loaded using the SQL Compare UI or used with a SQL Compare command line session using the /filter switch-->
+  <FilterName>Filter created using SQL Source Control</FilterName>
   <Filter version="1" type="DifferenceFilter">
     <FilterCaseSensitive>False</FilterCaseSensitive>
     <Filters version="1">
@@ -10,7 +15,7 @@
       </None>
       <Assembly version="1">
         <Include>True</Include>
-        <Expression>TRUE</Expression>
+        <Expression />
       </Assembly>
       <AsymmetricKey version="1">
         <Include>True</Include>
@@ -70,7 +75,7 @@
       </Queue>
       <Role version="1">
         <Include>True</Include>
-        <Expression>TRUE</Expression>
+        <Expression />
       </Role>
       <Route version="1">
         <Include>True</Include>
