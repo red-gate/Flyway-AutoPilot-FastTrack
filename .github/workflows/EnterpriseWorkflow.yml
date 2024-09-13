@@ -110,7 +110,7 @@ jobs:
         - name: Create Check Reports
           if: env.generateDriftAndChangeReport == 'true'
           run: |
-            flyway -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" check -dryrun -changes -drift migrate info "-check.failOnDrift=${{ env.failReleaseIfDriftDetected }}" "-check.buildUrl=${{ env.check_JDBC }}" "-check.buildUser=${{ env.check_userName }}" "-check.buildPassword=${{ env.check_password }}" -url="${{ env.JDBC }}" "-reportFilename=${{ GITHUB.WORKSPACE }}\reports\${{ env.databaseName }}-Run-${{ GITHUB.RUN_ID }}-Check-Report.html"
+            flyway -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" check -dryrun -changes -drift "-check.failOnDrift=${{ env.failReleaseIfDriftDetected }}" "-check.buildUrl=${{ env.check_JDBC }}" "-check.buildUser=${{ env.check_userName }}" "-check.buildPassword=${{ env.check_password }}" -url="${{ env.JDBC }}" "-reportFilename=${{ GITHUB.WORKSPACE }}\reports\${{ env.databaseName }}-Run-${{ GITHUB.RUN_ID }}-Check-Report.html"
           continue-on-error: true
  
          # Create a directory to stage the artifact files
@@ -146,7 +146,7 @@ jobs:
       - uses: actions/checkout@v3
         
       # Runs the Flyway Migrate against the Production database
-      - name: Migrate Build DB
+      - name: Migrate Prod DB
         if: ${{ true }}
         run: |
           flyway -user="${{ env.userName }}" -password="${{ env.password }}" -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" info migrate info -url="${{ env.JDBC }}" -cleanDisabled='false'
