@@ -75,7 +75,7 @@ jobs:
       #After migration scripts are validated, publish them as an artifact
       - name: Publish Validated Migration Scripts as Artifact
         if: env.publishArtifacts == 'true'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with: 
           name: flyway-build-artifact
           path: Artifact_Files/Migration/
@@ -120,7 +120,7 @@ jobs:
             cp -R ${{ GITHUB.WORKSPACE }}\reports Artifact_Files/Reports/
  
         - name: Publish Check Report as Artifact
-          uses: actions/upload-artifact@v2
+          uses: actions/upload-artifact@v4
           with: 
             name: flyway-reports
             path: Artifact_Files/Reports/
