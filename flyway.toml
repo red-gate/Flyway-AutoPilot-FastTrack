@@ -1,5 +1,5 @@
 id = "97ea357d-2613-4415-b434-775478105625"
-name = "FlywayTrialProject"
+name = "FlywayAutoPilot"
 databaseType = "SqlServer"
 
 [environments.development]
@@ -9,14 +9,21 @@ displayName = "Development database"
 
 [environments.shadow]
 url = "jdbc:sqlserver://localhost;databaseName=WidgetZShadow;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
-schemas = [ ]
 displayName = "Shadow database"
 provisioner = "clean"
 
-[environments.production]
+[environments.Prod]
 url = "jdbc:sqlserver://localhost;databaseName=WidgetProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
-schemas = [ ]
 displayName = "Production"
+
+[environments.Test]
+url = "jdbc:sqlserver://localhost;databaseName=WidgetTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+
+[environments.Check]
+url = "jdbc:sqlserver://localhost;databaseName=WidgetZCheck;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+
+[environments.Build]
+url = "jdbc:sqlserver://localhost;databaseName=WidgetZBuild;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 
 [flyway]
 locations = [ "filesystem:migrations" ]
