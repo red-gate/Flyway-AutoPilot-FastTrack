@@ -1,6 +1,8 @@
+# This is a best practice Flyway Enterprise workflow to help you get started with Azure DevOps and a Windows Runner
+
 name: Flyway-AutoPilot-Simple-Pipeline-Windows
 
-# trigger: #Uncomment lines 3-9 to enable an automatic pipeline trigger for any new migration scripts found in your preferred branch
+trigger: none
 #   branches:
 #     include:
 #       - release
@@ -9,7 +11,7 @@ name: Flyway-AutoPilot-Simple-Pipeline-Windows
 #       - migrations/*
 
 pool:
-  name: "" # To be set when a self-hosted agent pool is to be used alongside this pipeline
+  name: "default" # To be set when a self-hosted agent pool is to be used alongside this pipeline
   #vmImage: "" # To be used when a microsoft-hosted agent is used alongside this pipeline (Such as ubuntu-latest/windows-latest)
 
 variables:
@@ -223,11 +225,12 @@ stages:
             artifactName: 'Flyway-CI-$(Build.BuildId)'
             downloadPath: '$(System.ArtifactsDirectory)'
         - script: |
-            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -errorOverrides=S0001:0:I- -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\migrations" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
+            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -errorOverrides=S0001:0:I- -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\migrations" -publishResult="$(FLYWAY_PUBLISH_RESULT)" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           displayName: 'Migrate Test DB'
-          condition:
+          env:
+            FLYWAY_TOKEN: "$(FLYWAY_TOKEN_SECURE)" # Optional - If this is a secure variable, it needs to be set at the stage level so it can be decrypted
   
   - stage: Prod
     displayName: Prod Stage
@@ -340,8 +343,9 @@ stages:
             artifactName: 'Flyway-CI-$(Build.BuildId)'
             downloadPath: '$(System.ArtifactsDirectory)'
         - script: |
-            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -errorOverrides=S0001:0:I- -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\migrations" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
+            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -errorOverrides=S0001:0:I- -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\migrations" -publishResult="$(FLYWAY_PUBLISH_RESULT)" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           displayName: 'Migrate Prod DB'
-          condition:
+          env:
+            FLYWAY_TOKEN: "$(FLYWAY_TOKEN_SECURE)" # Optional - If this is a secure variable, it needs to be set at the stage level so it can be decrypted
