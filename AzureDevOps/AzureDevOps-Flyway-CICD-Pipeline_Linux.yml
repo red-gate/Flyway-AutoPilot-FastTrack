@@ -1,3 +1,5 @@
+# This is a best practice Flyway Enterprise workflow to help you get started with Azure DevOps and a Linux Runner
+
 name: Flyway-AutoPilot-Simple-Pipeline-Linux
 
 # trigger: #Uncomment lines 3-9 to enable an automatic pipeline trigger for any new migration scripts found in your preferred branch
@@ -201,7 +203,7 @@ stages:
             artifactName: 'Flyway-CI-$(Build.BuildId)'
             downloadPath: '$(System.ArtifactsDirectory)'
         - script: |
-            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -errorOverrides=S0001:0:I- -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/migrations" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
+            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -errorOverrides=S0001:0:I- -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/migrations" -publishResult="$(FLYWAY_PUBLISH_RESULT)" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           displayName: 'Migrate Test DB'
@@ -304,7 +306,7 @@ stages:
             artifactName: 'Flyway-CI-$(Build.BuildId)'
             downloadPath: '$(System.ArtifactsDirectory)'
         - script: |
-            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -errorOverrides=S0001:0:I- -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/migrations" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
+            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -errorOverrides=S0001:0:I- -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/migrations" -publishResult="$(FLYWAY_PUBLISH_RESULT)" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           displayName: 'Migrate Prod DB'
