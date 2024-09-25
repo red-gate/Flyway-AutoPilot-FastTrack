@@ -6,8 +6,4 @@ PRINT N'Altering [dbo].[WidgetPrices]'
 GO
 ALTER TABLE [dbo].[WidgetPrices] ALTER COLUMN [Price] [decimal] (19, 4) NULL
 GO
-PRINT N'Refreshing [dbo].[CurrentPrices]'
-GO
-EXEC sp_refreshview N'[dbo].[CurrentPrices]'
-GO
 
