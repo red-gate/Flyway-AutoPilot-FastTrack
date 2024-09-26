@@ -28,7 +28,6 @@ INSERT INTO ##DatabaseNames
 VALUES
 ('WidgetDev'),			-- The "WidgetDev" database must exist; we use it below for some initial objects for the POC workflow
 ('WidgetTest'),
-('WidgetStaging'),
 ('WidgetProd');
 GO
 
