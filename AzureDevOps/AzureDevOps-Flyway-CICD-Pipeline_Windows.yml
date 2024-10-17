@@ -31,7 +31,8 @@ variables:
 
   # Optional - For Microsoft Hosted Agents, it's necessary to ensure Flyway is installed on each run. Therefore, the below variables are required
   MICROSOFT_HOSTED_AGENT: "false" # Setting to false will skip the Flyway CLI check step
-  FLYWAY_VERSION: "10.17.3" # This outlines the version of Flyway CLI that will be downloaded if no Flyway CLI is detected on the target agent
+  FLYWAY_VERSION: "10.20.0" # This outlines the version of Flyway CLI that will be downloaded if no Flyway CLI is detected on the target agent
+  FLYWAY_INSTALL_DIRECTORY: 'C:\FlywayCLI\'
 
   # Optional: Side Task #1 - Setup Flyway Pipeline Integration - https://flyway.red-gate.com/ For More Details
   FLYWAY_PUBLISH_RESULT: "false" # Set this value to true to enable Flyway Pipelines and track your releases centrally!
@@ -64,7 +65,7 @@ stages:
                       Write-Host "Script found. Running Flyway_DownloadAndInstallCLI.ps1..."
                       & $scriptPath
                       Write-Host "Updating PATH environment variable to include Flyway CLI Path"
-                        Write-Host "##vso[task.prependpath]C:\FlywayCLI\flyway-$(FLYWAY_VERSION)"
+                        Write-Host "##vso[task.prependpath]$(FLYWAY_INSTALL_DIRECTORY)"
                     } 
                     else {
                       Write-Host "Error: Script not found at path $scriptPath"
@@ -149,7 +150,7 @@ stages:
                       Write-Host "Script found. Running Flyway_DownloadAndInstallCLI.ps1..."
                       & $scriptPath
                       Write-Host "Updating PATH environment variable to include Flyway CLI Path"
-                        Write-Host "##vso[task.prependpath]C:\FlywayCLI\flyway-$(FLYWAY_VERSION)"
+                        Write-Host "##vso[task.prependpath]$(FLYWAY_INSTALL_DIRECTORY)"
                     } 
                     else {
                       Write-Host "Error: Script not found at path $scriptPath"
@@ -212,7 +213,7 @@ stages:
                       Write-Host "Script found. Running Flyway_DownloadAndInstallCLI.ps1..."
                       & $scriptPath
                       Write-Host "Updating PATH environment variable to include Flyway CLI Path"
-                        Write-Host "##vso[task.prependpath]C:\FlywayCLI\flyway-$(FLYWAY_VERSION)"
+                        Write-Host "##vso[task.prependpath]$(FLYWAY_INSTALL_DIRECTORY)"
                     } 
                     else {
                       Write-Host "Error: Script not found at path $scriptPath"
@@ -267,7 +268,7 @@ stages:
                       Write-Host "Script found. Running Flyway_DownloadAndInstallCLI.ps1..."
                       & $scriptPath
                       Write-Host "Updating PATH environment variable to include Flyway CLI Path"
-                        Write-Host "##vso[task.prependpath]C:\FlywayCLI\flyway-$(FLYWAY_VERSION)"
+                        Write-Host "##vso[task.prependpath]$(FLYWAY_INSTALL_DIRECTORY)"
                     } 
                     else {
                       Write-Host "Error: Script not found at path $scriptPath"
@@ -330,7 +331,7 @@ stages:
                       Write-Host "Script found. Running Flyway_DownloadAndInstallCLI.ps1..."
                       & $scriptPath
                       Write-Host "Updating PATH environment variable to include Flyway CLI Path"
-                        Write-Host "##vso[task.prependpath]C:\FlywayCLI\flyway-$(FLYWAY_VERSION)"
+                        Write-Host "##vso[task.prependpath]$(FLYWAY_INSTALL_DIRECTORY)"
                     } 
                     else {
                       Write-Host "Error: Script not found at path $scriptPath"
