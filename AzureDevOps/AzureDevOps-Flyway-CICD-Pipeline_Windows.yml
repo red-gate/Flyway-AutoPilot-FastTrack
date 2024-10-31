@@ -37,7 +37,7 @@ variables:
 
   # Optional - For ephemeral agents/runners, it's necessary to validate Flyway is installed on each run. Set the below to true to enable the functionality
   FLYWAY_CLI_INSTALL_CHECK: "false" # Setting to false will skip the Flyway CLI check step
-  FLYWAY_VERSION: "10.20.0" # This outlines the version of Flyway CLI that will be downloaded if no Flyway CLI is detected on the target agent
+  FLYWAY_VERSION: "10.21.0" # This outlines the version of Flyway CLI that will be downloaded if no Flyway CLI is detected on the target agent
   FLYWAY_INSTALL_DIRECTORY: "C:\\FlywayCLI\\" # The path on the agent machine where Flyway CLI will be installed
 
   # Optional: Side Task #1 - Setup Flyway Pipeline Integration - https://flyway.red-gate.com/ For More Details
@@ -413,4 +413,4 @@ stages:
           workingDirectory: '$(WORKING_DIRECTORY)'
           displayName: 'Migrate Prod DB'
           env:
-            FLYWAY_TOKEN: "$(FLYWAY_TOKEN_SECURE)" # Optional - If this is a secure variable, it needs to be set at the stage level so it can be decrypted
+            MyVariableName: "MyValue"
