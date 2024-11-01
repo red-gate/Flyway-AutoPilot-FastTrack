@@ -26,6 +26,9 @@ variables:
   group: "AutoPilot_Global" # FLYWAY_EMAIL/FLYWAY_TOKEN/FLYWAY_LICENSE_KEY (Personal Access Keys are the recommended license authentication method - https://documentation.red-gate.com/fd/tutorial-personal-access-tokens-243271547.html)
   
   # License Authentication - Place value in above Library Group for security, or plaintext below for simplicity #
+
+  # Personal Access Tokens (PATs) are the recommended method of authorizing Flyway during a non-interactive session
+  # Details on how to do this can be found here: https://documentation.red-gate.com/flyway/flyway-cli-and-api/tutorials/tutorial-personal-access-tokens
   #FLYWAY_EMAIL: "" # Enter the email address linked to the Redgate Account that created the PAT
   # PAT's should always be treated as secure. Therefore, we recommend creating a secure variable called FLYWAY_TOKEN_SECURE. To use a secret in ADO, this needs to be mapped as an environment variable for each section
   #FLYWAY_TOKEN: "" # Enter the PAT Value (This should be treated like a password and thus as a secure variable. Consider using a Library Group or Secure Variable for this value)

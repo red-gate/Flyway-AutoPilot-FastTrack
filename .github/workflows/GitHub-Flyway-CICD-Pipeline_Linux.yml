@@ -12,22 +12,27 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 env:
- 
-  FLYWAY_LICENSE_KEY: "" #Repository Secret - Create this within the Projects Settings > Secrects > Actions section
-  # If the first undo script is U002, this will validate all undo scripts up to and including that
-  BASELINE_VERSION: "001" # This should match the version number of your baseline script
-  FIRST_UNDO_SCRIPT: "002"
-  # Enable this for additional debug logging
+
+   # Enable this for additional debug logging
   ACTIONS_RUNNER_DEBUG: false
 
-  # Optional - For Microsoft Hosted Agents, it's necessary to ensure Flyway is installed on each run. Therefore, the below variables are required
-  GITHUB_HOSTED_RUNNER: "false" # Setting to false will skip the Flyway CLI check step
-  FLYWAY_VERSION: "10.17.3" # This outlines the version of Flyway CLI that will be downloaded if no Flyway CLI is detected on the target agent
+  #Repository Secret - Create this within the Projects Settings > Secrets > Actions section
+  # Personal Access Tokens (PATs) are the recommended method of authorizing Flyway during a non-interactive session
+  # Details on how to do this can be found here: https://documentation.red-gate.com/flyway/flyway-cli-and-api/tutorials/tutorial-personal-access-tokens
+  FLYWAY_EMAIL: "${{ secrets.FLYWAY_EMAIL }}" # Enter the email address linked to the Redgate Account that created the PAT
+  FLYWAY_TOKEN: "${{ secrets.FLYWAY_TOKEN }}" # Enter the PAT Value (This should be treated like a password and thus as a secure variable.
+  # FLYWAY_LICENSE_KEY: "${{ secrets.FLYWAY_LICENSE_KEY }}" # Deprecated Authentication Method. Consider using the new PAT method above for added security.
+
+  BASELINE_VERSION: "001" # This should match the version number of your baseline script
+  FIRST_UNDO_SCRIPT: "002" # This should match the first undo version in your project
+
+  # Optional - For ephemeral agents/runners, it's necessary to validate Flyway is installed on each run. Set the below to true to enable the functionality
+  FLYWAY_CLI_INSTALL_CHECK: "false" # Setting to false will skip the Flyway CLI check step
+  FLYWAY_VERSION: "10.21.0" # This outlines the version of Flyway CLI that will be downloaded if no Flyway CLI is detected on the target agent
+  FLYWAY_INSTALL_DIRECTORY: "" # The path on the agent machine where Flyway CLI will be installed  
 
   # Optional: Side Task #1 - Setup Flyway Pipeline Integration - https://flyway.red-gate.com/ For More Details
   FLYWAY_PUBLISH_RESULT: "false" # Set this value to true to enable Flyway Pipelines and track your releases centrally!
-  FLYWAY_EMAIL: "" # Enter the email address linked to your redgate account
-  FLYWAY_TOKEN: "${{ secrets.FLYWAY_TOKEN_SECURE }}" # PAT Tokens should always be treated as secure. Therefore, we recommend creating a project secret called FLYWAY_TOKEN_SECURE. Create this within the Projects Settings > Secrets > Actions section
  
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -39,14 +44,13 @@ jobs:
     environment: 'build' #Ensure this environment name is setup in the projects Settings>Environment area. Ensuring any reviewers are also configFilesured 
     env:
       stage: 'Build'
-      
+      displayName: 'Build'
       # Environment Secrets - In a Production setup, Ensure all of the below have been created as an Environment Secret (Projects Settings > Secrets > Actions section, specially related to the environment in question) #
       DATABASE_NAME: "WidgetZBuild"
       ENVIRONMENT: "Build" # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
+      # Consider using Secure Variables for sensitive information like usernames/passwords
       TARGET_DATABASE_USERNAME : "MyUsername" # If using SQL Authentication, make sure to populate these fields!
       TARGET_DATABASE_PASSWORD : "MyPassword" # If using SQL Authentication, make sure to populate these fields!
-
-      displayName: 'Build'
       executeBuild: true
       publishArtifacts: true
  
@@ -56,7 +60,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Flyway - CLI Install ManualValidation
-        if: env.GITHUB_HOSTED_RUNNER == 'true'
+        if: env.FLYWAY_CLI_INSTALL_CHECK == 'true'
         run: |
           if flyway --help ; then
               ech "Flyway Installed and Available"
@@ -109,10 +113,9 @@ jobs:
     needs: build
     env:
       stage: 'Test'
-
       DATABASE_NAME: "WidgetTest"
-
       ENVIRONMENT: "Test" # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
+      # Consider using Secure Variables for sensitive information like usernames/passwords
       TARGET_DATABASE_USERNAME : "MyUsername" # If using SQL Authentication, make sure to populate these fields!
       TARGET_DATABASE_PASSWORD : "MyPassword" # If using SQL Authentication, make sure to populate these fields!
 
@@ -135,7 +138,7 @@ jobs:
         run: ls -R
 
       - name: Flyway - CLI Install ManualValidation
-        if: env.GITHUB_HOSTED_RUNNER == 'true'
+        if: env.FLYWAY_CLI_INSTALL_CHECK == 'true'
         run: |
           if flyway --help ; then
               ech "Flyway Installed and Available"
@@ -172,10 +175,9 @@ jobs:
     needs: test
     env:
       stage: 'Prod'
-
       DATABASE_NAME: "WidgetProd"
-
       ENVIRONMENT: "Prod"  # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
+      # Consider using Secure Variables for sensitive information like usernames/passwords
       TARGET_DATABASE_USERNAME : "MyUsername" # If using SQL Authentication, make sure to populate these fields!
       TARGET_DATABASE_PASSWORD : "MyPassword" # If using SQL Authentication, make sure to populate these fields!
 
@@ -198,7 +200,7 @@ jobs:
         run: ls -R
 
       - name: Flyway - CLI Install ManualValidation
-        if: env.GITHUB_HOSTED_RUNNER == 'true'
+        if: env.FLYWAY_CLI_INSTALL_CHECK == 'true'
         run: |
           if flyway --help ; then
               ech "Flyway Installed and Available"
