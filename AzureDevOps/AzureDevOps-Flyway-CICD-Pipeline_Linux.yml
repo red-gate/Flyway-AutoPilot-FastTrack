@@ -72,20 +72,15 @@ stages:
       #   value: "true"
 
       steps:
+
         # Pre-Req - Check if Flyway CLI Installed and Available on Agent
-        - script: |
-            if flyway --help ; then
-              echo "Flyway Installed and Available"
-            else 
-              echo "Flyway Not Installed - Downloading and Configuring Now"
-              wget -qO- https://download.red-gate.com/maven/release/com/redgate/flyway/flyway-commandline/$FLYWAY_VERSION/flyway-commandline-$FLYWAY_VERSION-linux-x64.tar.gz | tar -xvz && sudo ln -s `pwd`/flyway-$FLYWAY_VERSION/flyway /usr/local/bin 
-              echo "Flyway Downloaded - Setting PATH"
-              export PATH="/usr/local/bin/flyway-$FLYWAY_VERSION/:$PATH"
-              echo "Validation Step - Checking if Flyway can run"
-              flyway --version
-            fi
-          displayName: 'Flyway CLI - Install Check'
+        - task: Bash@3  
           condition: eq(variables['FLYWAY_CLI_INSTALL_CHECK'], true)
+          displayName: 'Flyway CLI - Validate and Install Check'
+          inputs:
+            targetType: 'filePath'
+            filePath: '$(WORKING_DIRECTORY)/Scripts/Flyway_DownloadAndInstallCLI_Unix.sh'
+
         # Step 1 - Ensure the Build Database is cleaned of all objects, meaning the build starts from scratch
         - script: |
             flyway info clean info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" "-plugins.clean.mode=all" -errorOverrides=S0001:0:I- -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations"
@@ -177,19 +172,12 @@ stages:
       #- group: pipeline_flyway_vars
       steps:
         # Pre-Req - Check if Flyway CLI Installed and Available on Agent
-        - script: |
-             if flyway --help ; then
-              echo "Flyway Installed and Available"
-             else 
-              echo "Flyway Not Installed - Downloading and Configuring Now"
-              wget -qO- https://download.red-gate.com/maven/release/com/redgate/flyway/flyway-commandline/$FLYWAY_VERSION/flyway-commandline-$FLYWAY_VERSION-linux-x64.tar.gz | tar -xvz && sudo ln -s `pwd`/flyway-$FLYWAY_VERSION/flyway /usr/local/bin 
-              echo "Flyway Downloaded - Setting PATH"
-              export PATH="/usr/local/bin/flyway-$FLYWAY_VERSION/:$PATH"
-              echo "Validation Step - Checking if Flyway can run"
-              flyway --version
-             fi
-          displayName: 'Flyway CLI - Install Check'
-          condition: and(eq(variables['FLYWAY_CLI_INSTALL_CHECK'], true), eq(variables['generateReport'], true))
+        - task: Bash@3  
+          condition: eq(variables['FLYWAY_CLI_INSTALL_CHECK'], true)
+          displayName: 'Flyway CLI - Validate and Install Check'
+          inputs:
+            targetType: 'filePath'
+            filePath: '$(WORKING_DIRECTORY)/Scripts/Flyway_DownloadAndInstallCLI_Unix.sh'
         
         - task: DownloadBuildArtifacts@0
           condition: eq(variables['generateReport'], true)
@@ -213,11 +201,6 @@ stages:
             ArtifactName: 'Flyway-CD-Reports-$(Build.BuildId)'
             PathtoPublish: '$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/reports/$(DATABASE_NAME)-Run-$(Build.BuildId)-Check-Report.html'
         
-        # - task: JakubRumpca.azure-pipelines-html-report.PublishHtmlReport.PublishHtmlReport@1 #This is an optional task that can make viewing the Check report much easier in each run. Disable if required.
-        #   displayName: 'Publish HTML Report'
-        #   inputs:
-        #     reportDir: '$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\reports\$(DATABASE_NAME)-Run-$(Build.BuildId)-Check-Report.html'
-
     - job: CodeReview
       displayName: Code Review
       dependsOn: ChangeReport
@@ -239,20 +222,13 @@ stages:
       variables:
         EXAMPLE: ""
       steps:
-          # Pre-Req - Check if Flyway CLI Installed and Available on Agent
-        - script: |
-             if flyway --help ; then
-              echo "Flyway Installed and Available"
-             else 
-              echo "Flyway Not Installed - Downloading and Configuring Now"
-              wget -qO- https://download.red-gate.com/maven/release/com/redgate/flyway/flyway-commandline/$FLYWAY_VERSION/flyway-commandline-$FLYWAY_VERSION-linux-x64.tar.gz | tar -xvz && sudo ln -s `pwd`/flyway-$FLYWAY_VERSION/flyway /usr/local/bin 
-              echo "Flyway Downloaded - Setting PATH"
-              export PATH="/usr/local/bin/flyway-$FLYWAY_VERSION/:$PATH"
-              echo "Validation Step - Checking if Flyway can run"
-              flyway --version
-             fi
-          displayName: 'Flyway CLI - Install Check'
+        # Pre-Req - Check if Flyway CLI Installed and Available on Agent
+        - task: Bash@3  
           condition: eq(variables['FLYWAY_CLI_INSTALL_CHECK'], true)
+          displayName: 'Flyway CLI - Validate and Install Check'
+          inputs:
+            targetType: 'filePath'
+            filePath: '$(WORKING_DIRECTORY)/Scripts/Flyway_DownloadAndInstallCLI_Unix.sh'
         - task: DownloadBuildArtifacts@0
           inputs:
             buildType: 'current'
@@ -309,19 +285,12 @@ stages:
       #- group: pipeline_flyway_vars
       steps:
         # Pre-Req - Check if Flyway CLI Installed and Available on Agent
-        - script: |
-             if flyway --help ; then
-              echo "Flyway Installed and Available"
-             else 
-              echo "Flyway Not Installed - Downloading and Configuring Now"
-              wget -qO- https://download.red-gate.com/maven/release/com/redgate/flyway/flyway-commandline/$FLYWAY_VERSION/flyway-commandline-$FLYWAY_VERSION-linux-x64.tar.gz | tar -xvz && sudo ln -s `pwd`/flyway-$FLYWAY_VERSION/flyway /usr/local/bin 
-              echo "Flyway Downloaded - Setting PATH"
-              export PATH="/usr/local/bin/flyway-$FLYWAY_VERSION/:$PATH"
-              echo "Validation Step - Checking if Flyway can run"
-              flyway --version
-             fi
-          displayName: 'Flyway CLI - Install Check'
-          condition: and(eq(variables['FLYWAY_CLI_INSTALL_CHECK'], true), eq(variables['generateReport'], true))
+        - task: Bash@3  
+          condition: eq(variables['FLYWAY_CLI_INSTALL_CHECK'], true)
+          displayName: 'Flyway CLI - Validate and Install Check'
+          inputs:
+            targetType: 'filePath'
+            filePath: '$(WORKING_DIRECTORY)/Scripts/Flyway_DownloadAndInstallCLI_Unix.sh'
         - task: DownloadBuildArtifacts@0
           condition: eq(variables['generateReport'], true)
           inputs:
@@ -343,11 +312,6 @@ stages:
           inputs:
             ArtifactName: 'Flyway-CD-Reports-$(Build.BuildId)'
             PathtoPublish: '$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/reports/$(DATABASE_NAME)-Run-$(Build.BuildId)-Check-Report.html'
-        
-        # - task: JakubRumpca.azure-pipelines-html-report.PublishHtmlReport.PublishHtmlReport@1 #This is an optional task that can make viewing the Check report much easier in each run. Disable if required.
-        #   displayName: 'Publish HTML Report'
-        #   inputs:
-        #     reportDir: '$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\reports\$(DATABASE_NAME)-Run-$(Build.BuildId)-Check-Report.html'
 
     - job: CodeReview
       displayName: Code Review
@@ -370,20 +334,13 @@ stages:
       variables:
         EXAMPLE: ""
       steps:
-          # Pre-Req - Check if Flyway CLI Installed and Available on Agent
-        - script: |
-             if flyway --help ; then
-              echo "Flyway Installed and Available"
-             else 
-              echo "Flyway Not Installed - Downloading and Configuring Now"
-              wget -qO- https://download.red-gate.com/maven/release/com/redgate/flyway/flyway-commandline/$FLYWAY_VERSION/flyway-commandline-$FLYWAY_VERSION-linux-x64.tar.gz | tar -xvz && sudo ln -s `pwd`/flyway-$FLYWAY_VERSION/flyway /usr/local/bin 
-              echo "Flyway Downloaded - Setting PATH"
-              export PATH="/usr/local/bin/flyway-$FLYWAY_VERSION/:$PATH"
-              echo "Validation Step - Checking if Flyway can run"
-              flyway --version
-             fi
-          displayName: 'Flyway CLI - Install Check'
+        # Pre-Req - Check if Flyway CLI Installed and Available on Agent
+        - task: Bash@3  
           condition: eq(variables['FLYWAY_CLI_INSTALL_CHECK'], true)
+          displayName: 'Flyway CLI - Validate and Install Check'
+          inputs:
+            targetType: 'filePath'
+            filePath: '$(WORKING_DIRECTORY)/Scripts/Flyway_DownloadAndInstallCLI_Unix.sh'
         - task: DownloadBuildArtifacts@0
           inputs:
             buildType: 'current'
