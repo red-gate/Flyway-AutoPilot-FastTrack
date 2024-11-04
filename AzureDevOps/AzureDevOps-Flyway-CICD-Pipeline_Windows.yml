@@ -12,7 +12,7 @@ trigger: none
 
 pool:
   name: "default" # To be set when a self-hosted agent pool is to be used alongside this pipeline
-  #vmImage: "" # To be used when a microsoft-hosted agent is used alongside this pipeline (Such as ubuntu-latest/windows-latest)
+  #vmImage: "windows-latest" # To be used when a microsoft-hosted agent is used alongside this pipeline (Such as ubuntu-latest/windows-latest)
 
 variables:
 
@@ -22,15 +22,16 @@ variables:
   WORKING_DIRECTORY: $(System.DefaultWorkingDirectory)
   system.debug: 'false' # Set this to true to enable verbose logging on your pipeline run
   
-  # Task #1 - For added security, create a Library Variable Group to house secure pipeline variables (Click Pipelines --> Library --> + Variable Group)
-  group: "AutoPilot_Global" # FLYWAY_EMAIL/FLYWAY_TOKEN/FLYWAY_LICENSE_KEY (Personal Access Keys are the recommended license authentication method - https://documentation.red-gate.com/fd/tutorial-personal-access-tokens-243271547.html)
+  # Side Quest #1 - Securing Variables with Library Groups - Create a Library Variable Group to house secure pipeline variables (Click Pipelines --> Library --> + Variable Group)
+  # group: "AutoPilot_Global" # FLYWAY_EMAIL/FLYWAY_TOKEN/FLYWAY_LICENSE_KEY (Personal Access Keys are the recommended license authentication method - https://documentation.red-gate.com/fd/tutorial-personal-access-tokens-243271547.html)
   
   # License Authentication - Place value in above Library Group for security, or plaintext below for simplicity #
-  # Personal Access Tokens (PATs) are the recommended method of authorizing Flyway during a non-interactive session
+
+  # Step 1: Personal Access Tokens (PATs) are the recommended method of authorizing Flyway during a non-interactive session
   # Details on how to do this can be found here: https://documentation.red-gate.com/flyway/flyway-cli-and-api/tutorials/tutorial-personal-access-tokens
-  #FLYWAY_EMAIL: "" # Enter the email address linked to the Redgate Account that created the PAT
+  FLYWAY_EMAIL: "$(FLYWAY_EMAIL_SECURE)" # Enter the email address linked to the Redgate Account that created the PAT
   # PAT's should always be treated as secure. Therefore, we recommend creating a secure variable called FLYWAY_TOKEN_SECURE. To use a secret in ADO, this needs to be mapped as an environment variable for each section
-  #FLYWAY_TOKEN: "" # Enter the PAT Value (This should be treated like a password and thus as a secure variable. Consider using a Library Group or Secure Variable for this value)
+  FLYWAY_TOKEN: "$(FLYWAY_TOKEN_SECURE)" # Enter the PAT Value (This should be treated like a password and thus as a secure variable. Consider using a Library Group or Secure Variable for this value)
 
   #FLYWAY_LICENSE_KEY: "" # Deprecated Authentication Method. Consider using the new PAT method for added security.
 
@@ -42,7 +43,7 @@ variables:
   FLYWAY_VERSION: "10.20.1" # This outlines the version of Flyway CLI that will be downloaded if no Flyway CLI is detected on the target agent
   FLYWAY_INSTALL_DIRECTORY: "C:\\FlywayCLI\\" # The path on the agent machine where Flyway CLI will be installed
 
-  # Optional: Side Task #1 - Setup Flyway Pipeline Integration - https://flyway.red-gate.com/ For More Details
+  # Optional: Side Quest #2 - Setup Flyway Pipeline Integration - https://flyway.red-gate.com/ For More Details
   FLYWAY_PUBLISH_RESULT: "false" # Set this value to true to enable Flyway Pipelines and track your releases centrally!
 
 stages:
@@ -51,24 +52,30 @@ stages:
     jobs:
     - job: Build
       variables: # Tip - For sensitive variables, store these in a Library Variable Group and reference the name below (Click Pipelines --> Library --> + Variable Group)
-        # Variables Expected - FLYWAY_EMAIL/FLYWAY_TOKEN/FLYWAY_LICENSE_KEY (Use either PAT or License Key method for License Authentication)
-      - group: "AutoPilot_Global"
-        # Variables Expected - DATABASE_NAME/TARGET_ENVIRONMENT/TARGET_DATABASE_USER/TARGET_DATABASE_PASSWORD/EXECUTE_BUILD
-      - group: "AutoPilot_Build"
-        # Example Variable syntax if required. Sensitive values should ALWAYS be kept secure in either Variable Groups (See above) or Secure Variables (Click 'Variables' in top right corner of pipeline editor)
-      # - name: DATABASE_NAME
-      #   value: "WidgetZBuild"
-      #   # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
-      # - name: TARGET_ENVIRONMENT
-      #   value: "Build"
-      #   # Optional - If SQL Authentication is used, provide the relevant database username. Otherwise, leave next two values blank
-      # - name: TARGET_DATABASE_USERNAME
-      #   value: "MyUsername"
-      # - name: TARGET_DATABASE_PASSWORD
-      #   value: "MyPassword"
-      #   # Turn to false to skip the build stage tasks
-      # - name: EXECUTE_BUILD
-      #   value: "true"
+      # Side Quest 2 - Securing Variables with Library Groups - FLYWAY_EMAIL/FLYWAY_TOKEN/FLYWAY_LICENSE_KEY (Use either PAT or License Key method for License Authentication)
+      #- group: "AutoPilot_Global"
+      # Side Quest 2 - Securing Variables with Library Groups - DATABASE_NAME/TARGET_ENVIRONMENT/TARGET_DATABASE_USER/TARGET_DATABASE_PASSWORD/EXECUTE_BUILD
+      #- group: "AutoPilot_Build"
+      # Example Variable syntax if required. Sensitive values should ALWAYS be kept secure in either Variable Groups (See above) or Secure Variables (Click 'Variables' in top right corner of pipeline editor)
+      - name: DATABASE_NAME
+        value: "WidgetZBuild"
+        # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
+      - name: TARGET_ENVIRONMENT
+        value: "Build"
+        # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
+      - name: TARGET_DATABASE_USERNAME
+        value: "MyUsername"
+      - name: TARGET_DATABASE_PASSWORD
+        value: "MyPassword"
+        # Turn to false to skip the build stage tasks
+      - name: EXECUTE_BUILD
+        value: "true"
+        # Enter the email address linked to the Redgate Account that created the PAT
+      - name: FLYWAY_EMAIL
+        value: "$(FLYWAY_EMAIL_SECURE)"
+        # PAT's should always be treated as secure. Therefore, we recommend creating a secure variable called FLYWAY_TOKEN_SECURE. To use a secret in ADO, this needs to be mapped as an environment variable for each section
+      - name: FLYWAY_TOKEN
+        value: "$(FLYWAY_TOKEN_SECURE)" # Enter the PAT Value (This should be treated like a password and thus as a secure variable. Consider using a Library Group or Secure Variable for this value)
 
       steps:
          # Pre-Req - Check if Flyway CLI Installed and Available on Agent
@@ -91,7 +98,7 @@ stages:
                     }
         # Step 1 - Ensure the Build Database is cleaned of all objects, meaning the build starts from scratch
         - script: |
-            flyway info clean info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" "-plugins.clean.mode=all" -errorOverrides=S0001:0:I- -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations"
+            flyway info clean info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" "-plugins.clean.mode=all" -errorOverrides=S0001:0:I- -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           displayName: 'Clean Build DB'
@@ -101,7 +108,7 @@ stages:
 
         # Step 2 - Migrate all scripts from the migration folder, to verify they can be deployed against an empty database. This is the quickest way to get feedback about problematic scripts
         - script: |
-            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" "-plugins.clean.mode=all" -errorOverrides=S0001:0:I- -baselineOnMigrate=true -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations"
+            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" "-plugins.clean.mode=all" -errorOverrides=S0001:0:I- -baselineOnMigrate=true -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           condition: eq(variables['EXECUTE_BUILD'], true)
@@ -111,7 +118,7 @@ stages:
 
 
         - script: |
-            flyway info undo info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -errorOverrides=S0001:0:I- -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations" -target="$(FIRST_UNDO_SCRIPT)"
+            flyway info undo info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -errorOverrides=S0001:0:I- -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations" -target="$(FIRST_UNDO_SCRIPT)" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
           continueOnError: true
           workingDirectory: '$(WORKING_DIRECTORY)'
           condition: eq(variables['EXECUTE_BUILD'], true)
@@ -144,34 +151,41 @@ stages:
     displayName: Test Stage
     dependsOn: Build
     variables: # Tip - For sensitive variables, store these in a Library Variable Group and reference the name below (Click Pipelines --> Library --> + Variable Group)
-        # Variables Expected - FLYWAY_EMAIL/FLYWAY_TOKEN/FLYWAY_LICENSE_KEY (Use either PAT or License Key method for License Authentication)
-      - group: "AutoPilot_Global"
-        # Variables Expected - DATABASE_NAME/TARGET_ENVIRONMENT/TARGET_DATABASE_USER/TARGET_DATABASE_PASSWORD/REPORT_ENVIRONMENT/REPORT_DATABASE_USERNAME/REPORT_DATABASE_PASSWORD/pauseForCodeReview/generateReport
-      - group: "AutoPilot_Test"
+        # Side Quest 2 - Securing Variables with Library Groups - FLYWAY_EMAIL/FLYWAY_TOKEN/FLYWAY_LICENSE_KEY (Use either PAT or License Key method for License Authentication)
+        #- group: "AutoPilot_Global"
+        # Side Quest 2 - Securing Variables with Library Groups - DATABASE_NAME/TARGET_ENVIRONMENT/TARGET_DATABASE_USER/TARGET_DATABASE_PASSWORD/EXECUTE_BUILD
+        #- group: "AutoPilot_Build"
         # Example Variable syntax if required. Sensitive values should ALWAYS be kept secure in either Variable Groups (See above) or Secure Variables (Click 'Variables' in top right corner of pipeline editor)
-      # - name: DATABASE_NAME
-      #   value: "WidgetTest"
-      #   # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
-      # - name: TARGET_ENVIRONMENT
-      #   value: "Test"
-      #   # Optional - If SQL Authentication is used, provide the relevant database username. Otherwise, leave next two values blank
-      # - name: TARGET_DATABASE_USERNAME
-      #   value: "MyUsername"
-      # - name: TARGET_DATABASE_PASSWORD
-      #   value: "MyPassword"
-      #   # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
-      # - name: REPORT_ENVIRONMENT
-      #   value: "Check"
-      #   # Optional - If SQL Authentication is used, provide the relevant database username. Otherwise, leave next two values blank
-      # - name: REPORT_DATABASE_USERNAME
-      #   value: "MyUsername"
-      # - name: REPORT_DATABASE_PASSWORD
-      #   value: "MyPassword"
-      #   # Turn to false to skip the build stage tasks
-      # - name: pauseForCodeReview
-      #   value: "false"
-      # - name: generateReport
-      #   value: "true"
+      - name: DATABASE_NAME
+        value: "WidgetTest"
+        # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
+      - name: TARGET_ENVIRONMENT
+        value: "Test"
+        # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
+      - name: TARGET_DATABASE_USERNAME
+        value: "MyUsername"
+      - name: TARGET_DATABASE_PASSWORD
+        value: "MyPassword"
+        # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
+      - name: REPORT_ENVIRONMENT
+        value: "Check"
+        # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
+      - name: REPORT_DATABASE_USERNAME
+        value: "MyUsername"
+      - name: REPORT_DATABASE_PASSWORD
+        value: "MyPassword"
+        # Turn to false to skip the build stage tasks
+      - name: pauseForCodeReview
+        value: "false"
+      - name: generateReport
+        value: "true"
+        # Enter the email address linked to the Redgate Account that created the PAT
+      - name: FLYWAY_EMAIL
+        value: "$(FLYWAY_EMAIL_SECURE)"
+        # PAT's should always be treated as secure. Therefore, we recommend creating a secure variable called FLYWAY_TOKEN_SECURE. To use a secret in ADO, this needs to be mapped as an environment variable for each section
+      - name: FLYWAY_TOKEN
+        value: "$(FLYWAY_TOKEN_SECURE)" # Enter the PAT Value (This should be treated like a password and thus as a secure variable. Consider using a Library Group or Secure Variable for this value)
+        
     jobs:
     - job: ChangeReport
       displayName: "Flyway - Pre Release Change Report"
@@ -221,10 +235,6 @@ stages:
             ArtifactName: 'Flyway-CD-Reports-$(Build.BuildId)'
             PathtoPublish: '$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\reports\$(DATABASE_NAME)-Run-$(Build.BuildId)-Check-Report.html'
         
-        # - task: JakubRumpca.azure-pipelines-html-report.PublishHtmlReport.PublishHtmlReport@1 #This is an optional task that can make viewing the Check report much easier in each run. Disable if required.
-        #   displayName: 'Publish HTML Report'
-        #   inputs:
-        #     reportDir: '$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\reports\$(DATABASE_NAME)-Run-$(Build.BuildId)-Check-Report.html'
 
     - job: CodeReview
       displayName: Code Review
@@ -282,34 +292,40 @@ stages:
     displayName: Prod Stage
     dependsOn: Test
     variables: # Tip - For sensitive variables, store these in a Library Variable Group and reference the name below (Click Pipelines --> Library --> + Variable Group)
-        # Variables Expected - FLYWAY_EMAIL/FLYWAY_TOKEN/FLYWAY_LICENSE_KEY (Use either PAT or License Key method for License Authentication)
-      - group: "AutoPilot_Global"
-        # Variables Expected - DATABASE_NAME/TARGET_ENVIRONMENT/TARGET_DATABASE_USER/TARGET_DATABASE_PASSWORD/REPORT_ENVIRONMENT/REPORT_DATABASE_USERNAME/REPORT_DATABASE_PASSWORD/pauseForCodeReview/generateReport
-      - group: "AutoPilot_Prod"
+        # Side Quest 2 - Securing Variables with Library Groups - FLYWAY_EMAIL/FLYWAY_TOKEN/FLYWAY_LICENSE_KEY (Use either PAT or License Key method for License Authentication)
+        #- group: "AutoPilot_Global"
+        # Side Quest 2 - Securing Variables with Library Groups - DATABASE_NAME/TARGET_ENVIRONMENT/TARGET_DATABASE_USER/TARGET_DATABASE_PASSWORD/EXECUTE_BUILD
+        #- group: "AutoPilot_Build"
         # Example Variable syntax if required. Sensitive values should ALWAYS be kept secure in either Variable Groups (See above) or Secure Variables (Click 'Variables' in top right corner of pipeline editor)
-      # - name: DATABASE_NAME
-      #   value: "WidgetProd"
-      #   # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
-      # - name: TARGET_ENVIRONMENT
-      #   value: "Prod"
-      #   # Optional - If SQL Authentication is used, provide the relevant database username. Otherwise, leave next two values blank
-      # - name: TARGET_DATABASE_USERNAME
-      #   value: "MyUsername"
-      # - name: TARGET_DATABASE_PASSWORD
-      #   value: "MyPassword"
-      #   # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
-      # - name: REPORT_ENVIRONMENT
-      #   value: "Check"
-      #   # Optional - If SQL Authentication is used, provide the relevant database username. Otherwise, leave next two values blank
-      # - name: REPORT_DATABASE_USERNAME
-      #   value: "MyUsername"
-      # - name: REPORT_DATABASE_PASSWORD
-      #   value: "MyPassword"
-      #   # Turn to false to skip the build stage tasks
-      # - name: pauseForCodeReview
-      #   value: "false"
-      # - name: generateReport
-      #   value: "true"
+      - name: DATABASE_NAME
+        value: "WidgetProd"
+        # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
+      - name: TARGET_ENVIRONMENT
+        value: "Prod"
+        # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
+      - name: TARGET_DATABASE_USERNAME
+        value: "MyUsername"
+      - name: TARGET_DATABASE_PASSWORD
+        value: "MyPassword"
+        # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
+      - name: REPORT_ENVIRONMENT
+        value: "Check"
+        # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
+      - name: REPORT_DATABASE_USERNAME
+        value: "MyUsername"
+      - name: REPORT_DATABASE_PASSWORD
+        value: "MyPassword"
+        # Turn to false to skip the build stage tasks
+      - name: pauseForCodeReview
+        value: "false"
+      - name: generateReport
+        value: "true"
+        # Enter the email address linked to the Redgate Account that created the PAT
+      - name: FLYWAY_EMAIL
+        value: "$(FLYWAY_EMAIL_SECURE)"
+        # PAT's should always be treated as secure. Therefore, we recommend creating a secure variable called FLYWAY_TOKEN_SECURE. To use a secret in ADO, this needs to be mapped as an environment variable for each section
+      - name: FLYWAY_TOKEN
+        value: "$(FLYWAY_TOKEN_SECURE)" # Enter the PAT Value (This should be treated like a password and thus as a secure variable. Consider using a Library Group or Secure Variable for this value)
 
     jobs:
     - job: ChangeReport
@@ -359,11 +375,6 @@ stages:
           inputs:
             ArtifactName: 'Flyway-CD-Reports-$(Build.BuildId)'
             PathtoPublish: '$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\reports\$(DATABASE_NAME)-Run-$(Build.BuildId)-Check-Report.html'
-        
-        # - task: JakubRumpca.azure-pipelines-html-report.PublishHtmlReport.PublishHtmlReport@1 #This is an optional task that can make viewing the Check report much easier in each run. Disable if required.
-        #   displayName: 'Publish HTML Report'
-        #   inputs:
-        #     reportDir: '$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\reports\$(DATABASE_NAME)-Run-$(Build.BuildId)-Check-Report.html'
 
     - job: CodeReview
       displayName: Code Review
