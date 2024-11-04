@@ -168,8 +168,8 @@ jobs:
           name: flyway-reports-test
           path: ${{ GITHUB.WORKSPACE }}\reports\**\*
         
-      # Runs the Flyway Migrate against the Production database
-      - name: Migrate Build DB
+      # Runs the Flyway Migrate against the Test database
+      - name: Migrate Test DB
         if: ${{ true }}
         run: |
           flyway info migrate info -environment="${{ env.ENVIRONMENT }}" -user="${{ env.TARGET_DATABASE_USERNAME }}" -password="${{ env.TARGET_DATABASE_PASSWORD }}" -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" -email="${{ env.FLYWAY_EMAIL }}" -token="${{ env.FLYWAY_TOKEN }}"
