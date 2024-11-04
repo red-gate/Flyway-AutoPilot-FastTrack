@@ -1,5 +1,5 @@
 id = "97ea357d-2613-4415-b434-775478105625"
-name = "FlywayAutoPilot"
+name = "AutoPilot - FastTrack"
 databaseType = "SqlServer"
 
 [environments.development]
