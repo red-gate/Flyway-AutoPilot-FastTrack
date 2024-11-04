@@ -1,255 +1,267 @@
-USE tempdb;
+-- Initial Setup of Databases
+CREATE DATABASE AutoPilotDev;
+CREATE DATABASE AutoPilotTest;
+CREATE DATABASE AutoPilotProd;
+CREATE DATABASE AutoPilotCheck;
+CREATE DATABASE AutoPilotBuild;
+CREATE DATABASE AutoPilotShadow;
 GO
 
-/* ********************
-Set up a temporary table with the names of the databases to be created **'
-******************** */
-/* Drop the table if it already exists */
-BEGIN TRY
-  DROP TABLE ##DatabaseNames
-END TRY
-BEGIN CATCH
-  PRINT '##DatabaseNames not available to drop'
-END CATCH
+USE AutoPilotDev;
+GO
 
-/* Create a table variable to hold all the database names in our pipeline */
-CREATE TABLE ##DatabaseNames
-(
-    ID INT IDENTITY(1, 1),
-    Name NVARCHAR(100)
+-- Creating Schemas
+CREATE SCHEMA Sales;
+GO
+CREATE SCHEMA Inventory;
+GO
+CREATE SCHEMA Customers;
+GO
+
+
+CREATE ROLE CustomerService;
+CREATE ROLE Admin;
+
+
+-- Tables in Customers Schema
+CREATE TABLE Customers.Customer (
+    CustomerID INT PRIMARY KEY IDENTITY,
+    FirstName NVARCHAR(50) NOT NULL,
+    LastName NVARCHAR(50) NOT NULL,
+    Email NVARCHAR(100) UNIQUE NOT NULL,
+    DateOfBirth DATE,
+    Phone NVARCHAR(20),
+    Address NVARCHAR(200)
 );
 
-/* Insert the databae names to be created.  
-   For a Proof of Concept (POC), you'll want at least Dev, Test, Prod.	*/
-INSERT INTO ##DatabaseNames 
-(
-    Name
-)
-VALUES
-('WidgetDev'),			-- The "WidgetDev" database must exist; we use it below for some initial objects for the POC workflow
-('WidgetTest'),
-('WidgetProd');
+CREATE TABLE Customers.LoyaltyProgram (
+    ProgramID INT PRIMARY KEY IDENTITY,
+    ProgramName NVARCHAR(50) NOT NULL,
+    PointsMultiplier DECIMAL(3, 2) DEFAULT 1.0
+);
+
+CREATE TABLE Customers.CustomerFeedback (
+    FeedbackID INT PRIMARY KEY IDENTITY,
+    CustomerID INT FOREIGN KEY REFERENCES Customers.Customer(CustomerID),
+    FeedbackDate DATETIME DEFAULT GETDATE(),
+    Rating INT CHECK (Rating BETWEEN 1 AND 5),
+    Comments NVARCHAR(500)
+);
 GO
 
-/* ******************** */
-PRINT '** Checking names of the databases to be created **'
-/* ******************** */
-SELECT * FROM ##DatabaseNames;
+-- Tables in Inventory Schema
+CREATE TABLE Inventory.Flight (
+    FlightID INT PRIMARY KEY IDENTITY,
+    Airline NVARCHAR(50) NOT NULL,
+    DepartureCity NVARCHAR(50) NOT NULL,
+    ArrivalCity NVARCHAR(50) NOT NULL,
+    DepartureTime DATETIME NOT NULL,
+    ArrivalTime DATETIME NOT NULL,
+    Price DECIMAL(10, 2) NOT NULL,
+    AvailableSeats INT NOT NULL
+);
+
+CREATE TABLE Inventory.FlightRoute (
+    RouteID INT PRIMARY KEY IDENTITY,
+    DepartureCity NVARCHAR(50) NOT NULL,
+    ArrivalCity NVARCHAR(50) NOT NULL,
+    Distance INT NOT NULL
+);
+
+CREATE TABLE Inventory.MaintenanceLog (
+    LogID INT PRIMARY KEY IDENTITY,
+    FlightID INT FOREIGN KEY REFERENCES Inventory.Flight(FlightID),
+    MaintenanceDate DATETIME DEFAULT GETDATE(),
+    Description NVARCHAR(500),
+    MaintenanceStatus NVARCHAR(20) DEFAULT 'Pending'
+);
 GO
 
+-- Tables in Sales Schema
+CREATE TABLE Sales.Orders (
+    OrderID INT PRIMARY KEY IDENTITY,
+    CustomerID INT FOREIGN KEY REFERENCES Customers.Customer(CustomerID),
+    FlightID INT FOREIGN KEY REFERENCES Inventory.Flight(FlightID),
+    OrderDate DATETIME DEFAULT GETDATE(),
+    Status NVARCHAR(20) DEFAULT 'Pending',
+    TotalAmount DECIMAL(10, 2),
+    TicketQuantity INT
+);
 
-/* Do not edit below this line */
-CREATE OR ALTER PROCEDURE CreateDatabase @dbName AS NVARCHAR(100)
+CREATE TABLE Sales.DiscountCode (
+    DiscountID INT PRIMARY KEY IDENTITY,
+    Code NVARCHAR(20) UNIQUE NOT NULL,
+    DiscountPercentage DECIMAL(4, 2) CHECK (DiscountPercentage BETWEEN 0 AND 100),
+    ExpiryDate DATETIME
+);
+
+CREATE TABLE Sales.OrderAuditLog (
+    AuditID INT PRIMARY KEY IDENTITY,
+    OrderID INT FOREIGN KEY REFERENCES Sales.Orders(OrderID),
+    ChangeDate DATETIME DEFAULT GETDATE(),
+    ChangeDescription NVARCHAR(500)
+);
+GO
+
+-- Views
+
+GO
+CREATE VIEW Sales.CustomerOrdersView AS
+SELECT 
+    c.CustomerID,
+    c.FirstName,
+    c.LastName,
+    o.OrderID,
+    o.OrderDate,
+    o.Status,
+    o.TotalAmount
+FROM Customers.Customer c
+JOIN Sales.Orders o ON c.CustomerID = o.CustomerID;
+GO
+
+CREATE VIEW Customers.CustomerFeedbackSummary AS
+SELECT 
+    c.CustomerID,
+    c.FirstName,
+    c.LastName,
+    AVG(f.Rating) AS AverageRating,
+    COUNT(f.FeedbackID) AS FeedbackCount
+FROM Customers.Customer c
+LEFT JOIN Customers.CustomerFeedback f ON c.CustomerID = f.CustomerID
+GROUP BY c.CustomerID, c.FirstName, c.LastName;
+GO
+
+CREATE VIEW Inventory.FlightMaintenanceStatus AS
+SELECT 
+    f.FlightID,
+    f.Airline,
+    f.DepartureCity,
+    f.ArrivalCity,
+    COUNT(m.LogID) AS MaintenanceCount,
+    SUM(CASE WHEN m.MaintenanceStatus = 'Completed' THEN 1 ELSE 0 END) AS CompletedMaintenance
+FROM Inventory.Flight f
+LEFT JOIN Inventory.MaintenanceLog m ON f.FlightID = m.FlightID
+GROUP BY f.FlightID, f.Airline, f.DepartureCity, f.ArrivalCity;
+GO
+
+-- Stored Procedures
+
+CREATE PROCEDURE Sales.GetCustomerFlightHistory @CustomerID INT
 AS
 BEGIN
-	/* ******************** */
-	PRINT '** Creating database: ' + @dbName + ' **'
-	/* ******************** */
-    DECLARE @procSqlString NVARCHAR(200);
-    SET @procSqlString = N'';
-
-	IF EXISTS (SELECT name FROM sys.databases WHERE name = @dbName)
-    BEGIN
-		SET @procSqlString = N'DROP DATABASE ' + @dbName + N';';
-		EXECUTE sys.sp_executesql @procSqlString;
-	END
-
-	SET @procSqlString = N'CREATE DATABASE ' + @dbName + N';';
-	EXECUTE sys.sp_executesql @procSqlString;
-END
-GO
-
-CREATE OR ALTER PROCEDURE CreateSchema @dbName AS NVARCHAR(100)
-AS
-BEGIN
-	/* ******************** */
-	PRINT '** Creating schema in database: ' + @dbName + ' **'
-	/* ******************** */
-	DECLARE @procSqlString NVARCHAR(500);
-
-	SET @procSqlString = 'CREATE TABLE ' +@dbName + '.[dbo].[WidgetPrices] (' +
-	'	[RecordID] [int] IDENTITY (1, 1) NOT NULL ,' +
-	'	[WidgetID] [int] NULL ,' +
-	'	[Price] [money] NULL ' +
-	') ON [PRIMARY]'
-	EXECUTE sys.sp_executesql @procSqlString;
-
-
-	SET @procSqlString = 'CREATE TABLE ' +@dbName + '.[dbo].[Widgets] (' +
-	'	[RecordID] [int] IDENTITY (1, 1) NOT NULL ,' +
-	'	[Description] [varchar] (50) NULL' + 
-	') ON [PRIMARY]'
-	EXECUTE sys.sp_executesql @procSqlString;
-
-	/* Insert some data into the Widgets table */
-	PRINT 'Inserting data into Widgets on database: ' + @dbName
-	SET @procSqlString = 'INSERT INTO ' +@dbName + '.[dbo].[Widgets] (DESCRIPTION) '+
-	'VALUES ' +
-	'(''Widget1''), ' + 
-	'(''Widget2''), ' + 
-	'(''Widget3'');' 
-	EXECUTE sys.sp_executesql @procSqlString;
-
-	SET @procSqlString = 'CREATE TABLE ' +@dbName + '.[dbo].[WidgetReferences] (' +
-	'	[WidgetID] [int] IDENTITY NOT NULL ,' +
-	'	[Reference] [varchar] (50) NULL ' +
-	') ON [PRIMARY]'
-	EXECUTE sys.sp_executesql @procSqlString;
-
-	SET @procSqlString = 'ALTER TABLE ' +@dbName + '.[dbo].[WidgetReferences] WITH NOCHECK ADD ' + 
-		'CONSTRAINT [PK_WidgetReferences] PRIMARY KEY  NONCLUSTERED ' +
-		'(' +
-		'	[WidgetID]' +
-		')  ON [PRIMARY] '
-	EXECUTE sys.sp_executesql @procSqlString;
-
-	SET @procSqlString = 'ALTER TABLE ' +@dbName + '.[dbo].[WidgetPrices] WITH NOCHECK ADD ' +
-		'CONSTRAINT [PK_WidgetPrices] PRIMARY KEY  NONCLUSTERED ' +
-		'(' +
-		'	[RecordID]' +
-		')  ON [PRIMARY] '
-	EXECUTE sys.sp_executesql @procSqlString;
-
-	SET @procSqlString = 'ALTER TABLE ' +@dbName + '.[dbo].[Widgets] WITH NOCHECK ADD ' +
-		'CONSTRAINT [PK_Widgets] PRIMARY KEY  NONCLUSTERED ' +
-		'(' +
-		'	[RecordID]' +
-		')  ON [PRIMARY] '
-	EXECUTE sys.sp_executesql @procSqlString;
-
-/*
-	/* NOT ALLOWED TO SPECIFY 3 PART NAME WHEN CREATING VIEWS */
-	SET @procSqlString = N'CREATE VIEW ' + @dbName + '.dbo.CurrentPrices ' +
-	'AS ' +
-	'SELECT WidgetID, Price, Description ' +
-	'FROM Widgets INNER JOIN ' +
-	'	WidgetPrices ON Widgets.RecordID = WidgetPrices.WidgetID '
-	EXEC sys.sp_executesql @procSqlString
-*/
-END
-GO
-
-/* 
-Loop through all the database names in the temp DatabaseNames table created and populated above 
-For each database, switch to that database and then create all the objects in that database 
-as defined by the createDatabase stored procedure
-*/
-
-DECLARE @minID INT;
-DECLARE @maxID INT;
-
-SELECT @minID = MIN(ID),
-       @maxID = MAX(ID)
-FROM ##DatabaseNames;
-
-DECLARE @databaseName NVARCHAR(100);
-SET @databaseName = N'';
-
-DECLARE @sqlString NVARCHAR(200);
-SET @sqlString = N'';
-
-WHILE @minID <= @maxID
-BEGIN
-	SELECT @databaseName = Name
-    FROM ##DatabaseNames
-    WHERE ID = @minID;
-
-    SELECT @minID = @minID + 1;
-
-    EXEC CreateDatabase @databaseName;
-	
-	SET @sqlString = N'USE ' + @databaseName + N';';
-
-	EXEC sys.sp_executesql @sqlString;
-
-	/* Create the schema objects in the database */
-    EXEC CreateSchema @databaseName;
-	
+    SELECT 
+        o.OrderID,
+        f.Airline,
+        f.DepartureCity,
+        f.ArrivalCity,
+        o.OrderDate,
+        o.Status,
+        o.TotalAmount
+    FROM Sales.Orders o
+    JOIN Inventory.Flight f ON o.FlightID = f.FlightID
+    WHERE o.CustomerID = @CustomerID
+    ORDER BY o.OrderDate;
 END;
-
-USE tempdb;
 GO
 
-/* Create empty databases needed for the workflow */
-BEGIN TRY
-	CREATE DATABASE WidgetZShadow;
-END TRY
-BEGIN CATCH
-  PRINT 'WidgetZShadow must already exist';
-END CATCH
-
-BEGIN TRY
-  CREATE DATABASE WidgetZBuild;
-END TRY
-BEGIN CATCH
-  PRINT 'WidgetZBuild must already exist';
-END CATCH
-
-BEGIN TRY
-  CREATE DATABASE WidgetZCheck;
-END TRY
-BEGIN CATCH
-  PRINT 'WidgetZCheck must already exist';
-END CATCH
-
-DROP PROC dbo.CreateDatabase;
-GO
-DROP PROC dbo.CreateSchema;
-GO
-
-
-
-/* ******************************* */
-PRINT '** Adding some extra objects to WidgetDev **'
-/* ******************************* */
-USE WidgetDev;
-GO
-
-CREATE OR ALTER VIEW dbo.CurrentPrices
-	AS
-	SELECT WidgetID, Price, Description
-	FROM Widgets INNER JOIN
-		WidgetPrices ON Widgets.RecordID = WidgetPrices.WidgetID
-GO
-
-CREATE OR ALTER PROCEDURE dbo.GetAllWidgets
+CREATE PROCEDURE Sales.UpdateOrderStatus
+    @OrderID INT,
+    @NewStatus NVARCHAR(20)
 AS
 BEGIN
-	SELECT RecordID,
-           Description 
-	FROM Widgets
-END
-GO
-	
-USE WidgetDev;
+    UPDATE Sales.Orders
+    SET Status = @NewStatus
+    WHERE OrderID = @OrderID;
+END;
 GO
 
-IF OBJECT_ID('dbo.CurrentPrices', 'V') IS NULL
+CREATE PROCEDURE Inventory.UpdateAvailableSeats
+    @FlightID INT,
+    @SeatChange INT
+AS
 BEGIN
-    EXEC ('CREATE VIEW dbo.CurrentPrices
-    AS
-    SELECT WidgetID, Price, Description
-    FROM dbo.Widgets
-    JOIN dbo.WidgetPrices ON dbo.Widgets.RecordID = dbo.WidgetPrices.WidgetID;');
-END
+    UPDATE Inventory.Flight
+    SET AvailableSeats = AvailableSeats + @SeatChange
+    WHERE FlightID = @FlightID;
+END;
 GO
 
-IF OBJECT_ID('dbo.GetAllWidgets', 'P') IS NULL
+CREATE PROCEDURE Sales.ApplyDiscount
+    @OrderID INT,
+    @DiscountCode NVARCHAR(20)
+AS
 BEGIN
-    EXEC ('CREATE PROCEDURE dbo.GetAllWidgets
-    AS
+    DECLARE @DiscountID INT, @DiscountPercentage DECIMAL(4, 2), @ExpiryDate DATETIME;
+    
+    SELECT 
+        @DiscountID = DiscountID,
+        @DiscountPercentage = DiscountPercentage,
+        @ExpiryDate = ExpiryDate
+    FROM Sales.DiscountCode
+    WHERE Code = @DiscountCode;
+    
+    IF @DiscountID IS NOT NULL AND @ExpiryDate >= GETDATE()
     BEGIN
-        SELECT RecordID, Description
-        FROM dbo.Widgets;
-    END');
-END
+        UPDATE Sales.Orders
+        SET TotalAmount = TotalAmount * (1 - @DiscountPercentage / 100)
+        WHERE OrderID = @OrderID;
+
+        INSERT INTO Sales.OrderAuditLog (OrderID, ChangeDescription)
+        VALUES (@OrderID, CONCAT('Discount ', @DiscountCode, ' applied with ', @DiscountPercentage, '% off.'));
+    END
+    ELSE
+    BEGIN
+        RAISERROR('Invalid or expired discount code.', 16, 1);
+    END
+END;
 GO
 
+CREATE PROCEDURE Inventory.AddMaintenanceLog
+    @FlightID INT,
+    @Description NVARCHAR(500)
+AS
+BEGIN
+    INSERT INTO Inventory.MaintenanceLog (FlightID, Description, MaintenanceStatus)
+    VALUES (@FlightID, @Description, 'Pending');
 
-/* Test data exists in Widget table on dev */
-/*
-Use WidgetDev;
+    PRINT 'Maintenance log entry created.';
+END;
 GO
 
-EXEC dbo.GetAllWidgets;
-*/
+CREATE PROCEDURE Customers.RecordFeedback
+    @CustomerID INT,
+    @Rating INT,
+    @Comments NVARCHAR(500)
+AS
+BEGIN
+    INSERT INTO Customers.CustomerFeedback (CustomerID, Rating, Comments)
+    VALUES (@CustomerID, @Rating, @Comments);
+
+    PRINT 'Customer feedback recorded successfully.';
+END;
+GO
+
+-- Sample Data Insertion
+
+-- Adding Customers
+INSERT INTO Customers.Customer (FirstName, LastName, Email, DateOfBirth, Phone, Address)
+VALUES ('Huxley', 'Kendell', 'FlywayAP@Red-Gate.com', '2000-08-10', '555-1234', '123 Main St'),
+       ('Chris', 'Hawkins', 'Chrawkins@Red-Gate.com', '1971-07-20', '555-5678', '456 Elm St');
+
+-- Adding Flights
+INSERT INTO Inventory.Flight (Airline, DepartureCity, ArrivalCity, DepartureTime, ArrivalTime, Price, AvailableSeats)
+VALUES ('Flyway Airlines', 'New York', 'London', '2024-11-20 10:00', '2024-11-20 20:00', 500.00, 150),
+       ('AutoPilot', 'Los Angeles', 'Tokyo', '2024-12-01 16:00', '2024-12-02 08:00', 800.00, 200);
+
+-- Adding Orders
+INSERT INTO Sales.Orders (CustomerID, FlightID, OrderDate, Status, TotalAmount, TicketQuantity)
+VALUES (1, 1, GETDATE(), 'Confirmed', 500.00, 1),
+       (2, 2, GETDATE(), 'Pending', 1600.00, 2);
+
+-- Adding Loyalty Programs
+INSERT INTO Customers.LoyaltyProgram (ProgramName, PointsMultiplier)
+VALUES ('Silver', 1.0), ('Gold', 1.5), ('Platinum', 2.0);
+
+-- Adding Discount Codes
+INSERT INTO Sales.DiscountCode (Code, DiscountPercentage, ExpiryDate)
+VALUES ('FLY20', 20.00, '2024-12-31'), ('NEWYEAR', 10.00, '2025-01-04');

@@ -3,27 +3,27 @@ name = "AutoPilot - FastTrack"
 databaseType = "SqlServer"
 
 [environments.development]
-url = "jdbc:sqlserver://localhost;databaseName=WidgetDev;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutoPilotDev;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 schemas = [ ]
 displayName = "Development database"
 
 [environments.shadow]
-url = "jdbc:sqlserver://localhost;databaseName=WidgetZShadow;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutoPilotShadow;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 displayName = "Shadow database"
 provisioner = "clean"
 
 [environments.Prod]
-url = "jdbc:sqlserver://localhost;databaseName=WidgetProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutoPilotProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 displayName = "Production"
 
 [environments.Test]
-url = "jdbc:sqlserver://localhost;databaseName=WidgetTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutoPilotTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 
 [environments.Check]
-url = "jdbc:sqlserver://localhost;databaseName=WidgetZCheck;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutoPilotCheck;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 
 [environments.Build]
-url = "jdbc:sqlserver://localhost;databaseName=WidgetZBuild;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutoPilotBuild;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 
 [flyway]
 locations = [ "filesystem:migrations" ]
@@ -34,14 +34,16 @@ defaultSchema = "dbo"
 baselineOnMigrate = true
 baselineVersion = "001_20230703120714"
 
-
 [flywayDesktop]
 developmentEnvironment = "development"
 shadowEnvironment = "shadow"
 schemaModel = "./schema-model"
 
-  [flywayDesktop.generate]
-  undoScripts = true
+[flywayDesktop.generate]
+undoScripts = true
+  
+[flyway.plugins.clean]
+mode = "all"
 
 [redgateCompare.sqlserver]
 filterFile = "Filter.scpf"
