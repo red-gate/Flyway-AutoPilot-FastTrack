@@ -252,10 +252,10 @@ stages:
       - group: "AutoPilot_Prod"
         # Example Variable syntax if required. Sensitive values should ALWAYS be kept secure in either Variable Groups (See above) or Secure Variables (Click 'Variables' in top right corner of pipeline editor)
       # - name: DATABASE_NAME
-      #   value: "WidgetTest"
+      #   value: "WidgetProd"
       #   # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
       # - name: TARGET_ENVIRONMENT
-      #   value: "Test"
+      #   value: "Prod"
       #   # Optional - If SQL Authentication is used, provide the relevant database username. Otherwise, leave next two values blank
       # - name: TARGET_DATABASE_USERNAME
       #   value: "MyUsername"
