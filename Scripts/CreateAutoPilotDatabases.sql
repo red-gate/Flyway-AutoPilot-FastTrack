@@ -1,15 +1,27 @@
 -- Flyway AutoPilot FastTrack Database Setup Script --
 
--- Initial Setup of Databases
-CREATE DATABASE AutoPilotDev;
-CREATE DATABASE AutoPilotTest;
-CREATE DATABASE AutoPilotProd;
-CREATE DATABASE AutoPilotCheck;
-CREATE DATABASE AutoPilotBuild;
-CREATE DATABASE AutoPilotShadow;
+-- Drop AutoPilotDev database if it exists to ensure fresh setup
+IF DB_ID('AutoPilotDev') IS NOT NULL
+BEGIN
+	USE MASTER
+    ALTER DATABASE AutoPilotDev SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE AutoPilotDev;
+END;
+
+-- Ensure each database exists, creating them if needed
+IF DB_ID('AutoPilotDev') IS NULL CREATE DATABASE AutoPilotDev;
+IF DB_ID('AutoPilotTest') IS NULL CREATE DATABASE AutoPilotTest;
+IF DB_ID('AutoPilotProd') IS NULL CREATE DATABASE AutoPilotProd;
+IF DB_ID('AutoPilotCheck') IS NULL CREATE DATABASE AutoPilotCheck;
+IF DB_ID('AutoPilotBuild') IS NULL CREATE DATABASE AutoPilotBuild;
+IF DB_ID('AutoPilotShadow') IS NULL CREATE DATABASE AutoPilotShadow;
 GO
 
 USE AutoPilotDev;
+GO
+
+ALTER DATABASE AutoPilotDev
+SET MULTI_USER;
 GO
 
 -- Creating Schemas
