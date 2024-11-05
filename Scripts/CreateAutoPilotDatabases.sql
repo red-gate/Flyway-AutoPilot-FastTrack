@@ -6,15 +6,16 @@ BEGIN
 	USE MASTER
     ALTER DATABASE AutoPilotDev SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
     DROP DATABASE AutoPilotDev;
+	PRINT 'AutoPilotDev Database Dropped'
 END;
 
 -- Ensure each database exists, creating them if needed
-IF DB_ID('AutoPilotDev') IS NULL CREATE DATABASE AutoPilotDev;
-IF DB_ID('AutoPilotTest') IS NULL CREATE DATABASE AutoPilotTest;
-IF DB_ID('AutoPilotProd') IS NULL CREATE DATABASE AutoPilotProd;
-IF DB_ID('AutoPilotCheck') IS NULL CREATE DATABASE AutoPilotCheck;
-IF DB_ID('AutoPilotBuild') IS NULL CREATE DATABASE AutoPilotBuild;
-IF DB_ID('AutoPilotShadow') IS NULL CREATE DATABASE AutoPilotShadow;
+IF DB_ID('AutoPilotDev') IS NULL CREATE DATABASE AutoPilotDev PRINT 'AutoPilotDev Database Created';
+IF DB_ID('AutoPilotTest') IS NULL CREATE DATABASE AutoPilotTest PRINT 'AutoPilotTest Database Created';
+IF DB_ID('AutoPilotProd') IS NULL CREATE DATABASE AutoPilotProd PRINT 'AutoPilotProd Database Created';
+IF DB_ID('AutoPilotCheck') IS NULL CREATE DATABASE AutoPilotCheck PRINT 'AutoPilotCheck Database Created';
+IF DB_ID('AutoPilotBuild') IS NULL CREATE DATABASE AutoPilotBuild PRINT 'AutoPilotBuild Database Created';
+IF DB_ID('AutoPilotShadow') IS NULL CREATE DATABASE AutoPilotShadow PRINT 'AutoPilotShadow Database Created';
 GO
 
 USE AutoPilotDev;
