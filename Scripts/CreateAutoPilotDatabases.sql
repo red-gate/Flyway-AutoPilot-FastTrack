@@ -1,3 +1,5 @@
+-- Flyway AutoPilot FastTrack Database Setup Script --
+
 -- Initial Setup of Databases
 CREATE DATABASE AutoPilotDev;
 CREATE DATABASE AutoPilotTest;
