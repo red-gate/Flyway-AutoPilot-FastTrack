@@ -46,7 +46,7 @@ jobs:
       stage: 'Build'
       displayName: 'Build'
       # Environment Secrets - In a Production setup, Ensure all of the below have been created as an Environment Secret (Projects Settings > Secrets > Actions section, specially related to the environment in question) #
-      DATABASE_NAME: "WidgetZBuild"
+      DATABASE_NAME: "AutoPilotBuild"
       ENVIRONMENT: "Build" # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
       # Consider using Secure Variables for sensitive information like usernames/passwords
       TARGET_DATABASE_USERNAME : "MyUsername" # If using SQL Authentication, make sure to populate these fields!
@@ -58,30 +58,26 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
-
+      # Optional - If Enabled, Flyway CLI will be validated and installed if not present
       - name: Flyway - CLI Automatic Validation and Install
         run: bash ${{ GITHUB.WORKSPACE }}/Scripts/Flyway_DownloadAndInstallCLI_Unix.sh
         if: env.FLYWAY_CLI_INSTALL_CHECK == 'true'
-      
       # Runs the Flyway Clean command against the Build database
       - name: Clean Build DB
         if: env.executeBuild == 'true'
         run: |
           flyway info clean info -environment="${{ env.ENVIRONMENT }}" -user="${{ env.TARGET_DATABASE_USERNAME }}" -password="${{ env.TARGET_DATABASE_PASSWORD }}" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}/migrations" -cleanDisabled='false' "-plugins.clean.mode=all"
-        
       # Runs the Flyway Migrate command against the Build database
       - name: Migrate Build DB
         if: env.executeBuild == 'true'
         run: |
           flyway info migrate info -environment="${{ env.ENVIRONMENT }}" -user="${{ env.TARGET_DATABASE_USERNAME }}" -password="${{ env.TARGET_DATABASE_PASSWORD }}" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}/migrations" -cleanDisabled='false' -baselineOnMigrate="true"
-          
       # Runs the Flyway Undo command against the Build database
       - name: undo Build DB
         if: env.executeBuild == 'true'
         run: |
           flyway info undo info -environment="${{ env.ENVIRONMENT }}" -user=${{ env.TARGET_DATABASE_USERNAME }} -password=${{ env.TARGET_DATABASE_PASSWORD }} -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}/migrations" -baselineOnMigrate="true" -cleanDisabled='false' -target="${{ env.FIRST_UNDO_SCRIPT }}"
-     
-      #After migration scripts are validated, publish them as an artifact
+      # After migration scripts are validated, publish them as an artifact
       - name: Publish Validated Migration Scripts as Artifact
         if: env.publishArtifacts == 'true'
         uses: actions/upload-artifact@v4
@@ -107,7 +103,7 @@ jobs:
     needs: build
     env:
       stage: 'Test'
-      DATABASE_NAME: "WidgetTest"
+      DATABASE_NAME: "AutoPilotTest"
       ENVIRONMENT: "Test" # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
       # Consider using Secure Variables for sensitive information like usernames/passwords
       TARGET_DATABASE_USERNAME : "MyUsername" # If using SQL Authentication, make sure to populate these fields!
@@ -128,26 +124,25 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: flyway-build-artifact-${{ github.run_number }}
+      # Optional - List out all build artifact files on disk, helpful for debugging
       - name: Display structure of downloaded files
         run: ls -R
-
+      # Optional - If Enabled, Flyway CLI will be validated and installed if not present
       - name: Flyway - CLI Automatic Validation and Install
         run: bash ${{ GITHUB.WORKSPACE }}/Scripts/Flyway_DownloadAndInstallCLI_Unix.sh
         if: env.FLYWAY_CLI_INSTALL_CHECK == 'true'
-
        # Runs the Flyway Check command, to produce a deployment report, against the Production database
       - name: Create Check Reports
         if: env.generateDriftAndChangeReport == 'true'
         run: |
           flyway check -dryrun -changes -drift -environment="${{ env.ENVIRONMENT }}" -user=${{ env.TARGET_DATABASE_USERNAME }} -password=${{ env.TARGET_DATABASE_PASSWORD }} -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}/migrations" "-check.failOnDrift=${{ env.failReleaseIfDriftDetected }}" "-check.buildEnvironment=${{ env.CHECK_ENVIRONMENT }}" "-environments.${{ env.CHECK_ENVIRONMENT }}.user=${{ env.CHECK_DATABASE_USERNAME }}" "-environments.${{ env.CHECK_ENVIRONMENT }}.password=${{ env.CHECK_DATABASE_PASSWORD }}" "-reportFilename=${{ GITHUB.WORKSPACE }}/reports/${{ env.DATABASE_NAME }}-Run-${{ GITHUB.RUN_ID }}-${{ env.ENVIRONMENT }}-Check-Report.html" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -email="${{ env.FLYWAY_EMAIL }}" -token="${{ env.FLYWAY_TOKEN }}"
         continue-on-error: true
-
+      # Publishes Check Report as Pipeline Artifact
       - name: Publish Check Report as Artifact
         uses: actions/upload-artifact@v4
         with: 
           name: flyway-reports-test
           path: ${{ GITHUB.WORKSPACE }}/reports/**/*
-        
       # Runs the Flyway Migrate against the Production database
       - name: Migrate Build DB
         if: ${{ true }}
@@ -163,7 +158,7 @@ jobs:
     needs: test
     env:
       stage: 'Prod'
-      DATABASE_NAME: "WidgetProd"
+      DATABASE_NAME: "AutoPilotProd"
       ENVIRONMENT: "Prod"  # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
       # Consider using Secure Variables for sensitive information like usernames/passwords
       TARGET_DATABASE_USERNAME : "MyUsername" # If using SQL Authentication, make sure to populate these fields!
@@ -184,26 +179,25 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: flyway-build-artifact-${{ github.run_number }}
+      # Optional - List out all build artifact files on disk, helpful for debugging
       - name: Display structure of downloaded files
         run: ls -R
-
+      # Optional - If Enabled, Flyway CLI will be validated and installed if not present
       - name: Flyway - CLI Automatic Validation and Install
         run: bash ${{ GITHUB.WORKSPACE }}/Scripts/Flyway_DownloadAndInstallCLI_Unix.sh
         if: env.FLYWAY_CLI_INSTALL_CHECK == 'true'
-
        # Runs the Flyway Check command, to produce a deployment report, against the Production database
       - name: Create Check Reports
         if: env.generateDriftAndChangeReport == 'true'
         run: |
           flyway check -dryrun -changes -drift -environment="${{ env.ENVIRONMENT }}" -user=${{ env.TARGET_DATABASE_USERNAME }} -password=${{ env.TARGET_DATABASE_PASSWORD }} -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}/migrations" "-check.failOnDrift=${{ env.failReleaseIfDriftDetected }}" "-check.buildEnvironment=${{ env.CHECK_ENVIRONMENT }}" "-environments.${{ env.CHECK_ENVIRONMENT }}.user=${{ env.CHECK_DATABASE_USERNAME }}" "-environments.${{ env.CHECK_ENVIRONMENT }}.password=${{ env.CHECK_DATABASE_PASSWORD }}" "-reportFilename=${{ GITHUB.WORKSPACE }}/reports/${{ env.DATABASE_NAME }}-Run-${{ GITHUB.RUN_ID }}-${{ env.ENVIRONMENT }}-Check-Report.html" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -email="${{ env.FLYWAY_EMAIL }}" -token="${{ env.FLYWAY_TOKEN }}"
         continue-on-error: true
-
+       # Publish Check Report as Pipeline Artifact
       - name: Publish Check Report as Artifact
         uses: actions/upload-artifact@v4
         with: 
           name: flyway-reports-prod
           path: ${{ GITHUB.WORKSPACE }}/reports/**/*
-        
       # Runs the Flyway Migrate against the Production database
       - name: Migrate Production DB
         if: ${{ true }}

@@ -58,7 +58,7 @@ stages:
       #- group: "AutoPilot_Build"
       # Example Variable syntax if required. Sensitive values should ALWAYS be kept secure in either Variable Groups (See above) or Secure Variables (Click 'Variables' in top right corner of pipeline editor)
       - name: DATABASE_NAME
-        value: "WidgetZBuild"
+        value: "AutoPilotBuild"
         # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
       - name: TARGET_ENVIRONMENT
         value: "Build"
@@ -80,7 +80,7 @@ stages:
 
       steps:
 
-        # Pre-Req - Check if Flyway CLI Installed and Available on Agent
+        # Pre-Req - Optional - Check if Flyway CLI Installed and Available on Agent
         - task: Bash@3  
           condition: eq(variables['FLYWAY_CLI_INSTALL_CHECK'], true)
           displayName: 'Flyway CLI - Validate and Install Check'
@@ -107,7 +107,7 @@ stages:
           displayName: 'Validate Migrate Scripts'
           env:
             EXAMPLE_VARIABLE: MyValue
-
+        # Step 3 - Undo all relevant migrations using corresponding rollback script, to validate they can be run. This helps to reduce the chance the script will fail during a real life rollback scenario 
         - script: |
             flyway info undo info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -errorOverrides=S0001:0:I- -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations" -target="$(FIRST_UNDO_SCRIPT)" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
           continueOnError: true
@@ -116,7 +116,7 @@ stages:
           displayName: 'Validate Undo Scripts'
           env:
             EXAMPLE_VARIABLE: MyValue
-
+        # ADO - Copy in-scope build files to artifact directory 
         - task: CopyFiles@2
           inputs:
             SourceFolder: '$(WORKING_DIRECTORY)'
@@ -130,7 +130,7 @@ stages:
               **/flyway.toml
               **/Filter.scpf
             TargetFolder: '$(System.ArtifactsDirectory)'
-
+        # ADO - Publish Artifact Directory
         - task: PublishBuildArtifacts@1 # This step publishes all the validated Flyway Project files as a build artifact
           displayName: 'Publish Build Artifact'
           inputs:
@@ -147,7 +147,7 @@ stages:
         #- group: "AutoPilot_Build"
         # Example Variable syntax if required. Sensitive values should ALWAYS be kept secure in either Variable Groups (See above) or Secure Variables (Click 'Variables' in top right corner of pipeline editor)
       - name: DATABASE_NAME
-        value: "WidgetTest"
+        value: "AutoPilotTest"
         # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
       - name: TARGET_ENVIRONMENT
         value: "Test"
@@ -185,14 +185,14 @@ stages:
       #- group: ${{stage.variableGroupName}}
       #- group: pipeline_flyway_vars
       steps:
-        # Pre-Req - Check if Flyway CLI Installed and Available on Agent
+        # Pre-Req - Optional - Check if Flyway CLI Installed and Available on Agent
         - task: Bash@3  
           condition: eq(variables['FLYWAY_CLI_INSTALL_CHECK'], true)
           displayName: 'Flyway CLI - Validate and Install Check'
           inputs:
             targetType: 'filePath'
             filePath: '$(WORKING_DIRECTORY)/Scripts/Flyway_DownloadAndInstallCLI_Unix.sh'
-        
+        # Pre-Req - Download Build Artifact
         - task: DownloadBuildArtifacts@0
           condition: eq(variables['generateReport'], true)
           inputs:
@@ -200,14 +200,14 @@ stages:
             downloadType: 'single'
             artifactName: 'Flyway-CI-$(Build.BuildId)'
             downloadPath: '$(System.ArtifactsDirectory)'
-        
+        # Step 1 - Create Check Report
         - script: |
               flyway check -dryrun -changes -drift info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -check.buildEnvironment="$(REPORT_ENVIRONMENT)" -environments.$(REPORT_ENVIRONMENT).user="$(REPORT_DATABASE_USERNAME)" -environments.$(REPORT_ENVIRONMENT).password="$(REPORT_DATABASE_PASSWORD)" -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/migrations" "-reportEnabled=true" "-reportFilename=$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/reports/$(DATABASE_NAME)-Run-$(Build.BuildId)-Check-Report.html" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
           workingDirectory: '$(WORKING_DIRECTORY)'
           condition: eq(variables['generateReport'], true)
           continueOnError: false
           displayName: 'Flyway Check Report'
-        
+        # Step 2 - Publish Check Report
         - task: PublishBuildArtifacts@1
           displayName: 'Publish Check Report'
           condition: eq(variables['generateReport'], true)
@@ -220,6 +220,7 @@ stages:
       dependsOn: ChangeReport
       pool: server
       steps:
+        # Optional - Manual Validation Step
         - task: ManualValidation@0
           condition: eq(variables['pauseForCodeReview'], true)
           displayName: 'Review Change Report Prior To Release'
@@ -243,12 +244,14 @@ stages:
           inputs:
             targetType: 'filePath'
             filePath: '$(WORKING_DIRECTORY)/Scripts/Flyway_DownloadAndInstallCLI_Unix.sh'
+        # Pre-Req - Download Build Artifact
         - task: DownloadBuildArtifacts@0
           inputs:
             buildType: 'current'
             downloadType: 'single'
             artifactName: 'Flyway-CI-$(Build.BuildId)'
             downloadPath: '$(System.ArtifactsDirectory)'
+        # Flyway - Deploy Pending migrations to target environment
         - script: |
             flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -errorOverrides=S0001:0:I- -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/migrations" -publishResult="$(FLYWAY_PUBLISH_RESULT)" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
           continueOnError: false
@@ -266,7 +269,7 @@ stages:
         #- group: "AutoPilot_Build"
         # Example Variable syntax if required. Sensitive values should ALWAYS be kept secure in either Variable Groups (See above) or Secure Variables (Click 'Variables' in top right corner of pipeline editor)
       - name: DATABASE_NAME
-        value: "WidgetProd"
+        value: "AutoPilotProd"
         # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
       - name: TARGET_ENVIRONMENT
         value: "Prod"
@@ -311,6 +314,7 @@ stages:
           inputs:
             targetType: 'filePath'
             filePath: '$(WORKING_DIRECTORY)/Scripts/Flyway_DownloadAndInstallCLI_Unix.sh'
+        # Pre-Req - Download Build Artifact
         - task: DownloadBuildArtifacts@0
           condition: eq(variables['generateReport'], true)
           inputs:
@@ -318,14 +322,14 @@ stages:
             downloadType: 'single'
             artifactName: 'Flyway-CI-$(Build.BuildId)'
             downloadPath: '$(System.ArtifactsDirectory)'
-        
+        # Step 1 - Create Check Report
         - script: |
               flyway check -dryrun -changes -drift info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -check.buildEnvironment="$(REPORT_ENVIRONMENT)" -environments.$(REPORT_ENVIRONMENT).user="$(REPORT_DATABASE_USERNAME)" -environments.$(REPORT_ENVIRONMENT).password="$(REPORT_DATABASE_PASSWORD)" -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/migrations" "-reportEnabled=true" "-reportFilename=$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/reports/$(DATABASE_NAME)-Run-$(Build.BuildId)-Check-Report.html" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
           workingDirectory: '$(WORKING_DIRECTORY)'
           condition: eq(variables['generateReport'], true)
           continueOnError: false
           displayName: 'Flyway Check Report'
-        
+        # Step 2 - Publish Check Report
         - task: PublishBuildArtifacts@1
           displayName: 'Publish Check Report'
           condition: eq(variables['generateReport'], true)
@@ -361,12 +365,14 @@ stages:
           inputs:
             targetType: 'filePath'
             filePath: '$(WORKING_DIRECTORY)/Scripts/Flyway_DownloadAndInstallCLI_Unix.sh'
+        # Pre-Req - Download Build Artifact
         - task: DownloadBuildArtifacts@0
           inputs:
             buildType: 'current'
             downloadType: 'single'
             artifactName: 'Flyway-CI-$(Build.BuildId)'
             downloadPath: '$(System.ArtifactsDirectory)'
+        # Flyway - Deploy Pending migrations to target environment
         - script: |
             flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -errorOverrides=S0001:0:I- -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/migrations" -publishResult="$(FLYWAY_PUBLISH_RESULT)" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
           continueOnError: false

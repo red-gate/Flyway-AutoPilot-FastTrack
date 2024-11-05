@@ -46,7 +46,7 @@ jobs:
       stage: 'Build'
       
       # Environment Secrets - In a Production setup, Ensure all of the below have been created as an Environment Secret (Projects Settings > Secrets > Actions section, specially related to the environment in question) #
-      DATABASE_NAME: "WidgetZBuild"
+      DATABASE_NAME: "AutoPilotBuild"
       ENVIRONMENT: "Build" # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
       # Consider using Secure Variables for sensitive information like usernames/passwords
       TARGET_DATABASE_USERNAME : "MyUsername" # If using SQL Authentication, make sure to populate these fields!
@@ -121,7 +121,7 @@ jobs:
     env:
       stage: 'Test'
 
-      DATABASE_NAME: "WidgetTest"
+      DATABASE_NAME: "AutoPilotTest"
 
       ENVIRONMENT: "Test" # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
       # Consider using Secure Variables for sensitive information like usernames/passwords
@@ -189,7 +189,7 @@ jobs:
     env:
       stage: 'Prod'
 
-      DATABASE_NAME: "WidgetProd"
+      DATABASE_NAME: "AutoPilotProd"
 
       ENVIRONMENT: "Prod"  # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
       # Consider using Secure Variables for sensitive information like usernames/passwords
