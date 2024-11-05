@@ -259,6 +259,7 @@ stages:
         # Pre-Req - Check if Flyway CLI Installed and Available on Agent
         - task: PowerShell@2
           displayName: 'Flyway CLI - Install Check'
+          condition: eq(variables['FLYWAY_CLI_INSTALL_CHECK'], true)
           inputs:
             targetType: 'inline'
             script: |
@@ -402,6 +403,7 @@ stages:
         # Pre-Req - Check if Flyway CLI Installed and Available on Agent
         - task: PowerShell@2
           displayName: 'Flyway CLI - Install Check'
+          condition: eq(variables['FLYWAY_CLI_INSTALL_CHECK'], true)
           inputs:
             targetType: 'inline'
             script: |
