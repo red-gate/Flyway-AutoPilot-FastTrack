@@ -427,7 +427,7 @@ stages:
             downloadPath: '$(System.ArtifactsDirectory)'
         # Flyway - Deploy Pending migrations to target environment
         - script: |
-            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)"  -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\migrations" -publishResult="$(FLYWAY_PUBLISH_RESULT)" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
+            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\migrations" -publishResult="$(FLYWAY_PUBLISH_RESULT)" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           displayName: 'Migrate Prod DB'
