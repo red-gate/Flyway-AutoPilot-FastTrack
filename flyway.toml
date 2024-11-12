@@ -32,7 +32,8 @@ outOfOrder = true
 validateMigrationNaming = true
 defaultSchema = "dbo"
 baselineOnMigrate = true
-baselineVersion = "001_20230703120714"
+baselineVersion = "001"
+errorOverrides = ["S0001:0:I-"]
 
 [flywayDesktop]
 developmentEnvironment = "development"
