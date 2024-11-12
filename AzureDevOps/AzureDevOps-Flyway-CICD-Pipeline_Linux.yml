@@ -90,7 +90,7 @@ stages:
 
         # Step 1 - Ensure the Build Database is cleaned of all objects, meaning the build starts from scratch
         - script: |
-            flyway info clean info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" "-plugins.clean.mode=all" -errorOverrides=S0001:0:I- -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
+            flyway info clean info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" "-plugins.clean.mode=all" -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           displayName: 'Clean Build DB'
@@ -100,7 +100,7 @@ stages:
 
         # Step 2 - Migrate all scripts from the migration folder, to verify they can be deployed against an empty database. This is the quickest way to get feedback about problematic scripts
         - script: |
-            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" "-plugins.clean.mode=all" -errorOverrides=S0001:0:I- -baselineOnMigrate=true -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
+            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" "-plugins.clean.mode=all" -baselineOnMigrate=true -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           condition: eq(variables['EXECUTE_BUILD'], true)
@@ -109,7 +109,7 @@ stages:
             EXAMPLE_VARIABLE: MyValue
         # Step 3 - Undo all relevant migrations using corresponding rollback script, to validate they can be run. This helps to reduce the chance the script will fail during a real life rollback scenario 
         - script: |
-            flyway info undo info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -errorOverrides=S0001:0:I- -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations" -target="$(FIRST_UNDO_SCRIPT)" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
+            flyway info undo info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations" -target="$(FIRST_UNDO_SCRIPT)" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
           continueOnError: true
           workingDirectory: '$(WORKING_DIRECTORY)'
           condition: eq(variables['EXECUTE_BUILD'], true)
@@ -253,7 +253,7 @@ stages:
             downloadPath: '$(System.ArtifactsDirectory)'
         # Flyway - Deploy Pending migrations to target environment
         - script: |
-            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -errorOverrides=S0001:0:I- -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/migrations" -publishResult="$(FLYWAY_PUBLISH_RESULT)" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
+            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/migrations" -publishResult="$(FLYWAY_PUBLISH_RESULT)" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           displayName: 'Migrate Test DB'
@@ -374,7 +374,7 @@ stages:
             downloadPath: '$(System.ArtifactsDirectory)'
         # Flyway - Deploy Pending migrations to target environment
         - script: |
-            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -errorOverrides=S0001:0:I- -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/migrations" -publishResult="$(FLYWAY_PUBLISH_RESULT)" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
+            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/migrations" -publishResult="$(FLYWAY_PUBLISH_RESULT)" -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           displayName: 'Migrate Prod DB'
