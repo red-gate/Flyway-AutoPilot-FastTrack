@@ -1,0 +1,100 @@
+name: Enterprise-Workflow
+
+trigger:
+  branches:
+    include:
+      - release
+      - migrations/**
+
+pr: none
+
+variables:
+  # PUT THIS IN A AUTOPILOT VARIABLE GROUP ----> FLYWAY_LICENSE_KEY: $(FLYWAY_LICENSE_KEY)
+  FIRST_UNDO_SCRIPT: "002"
+  ACTIONS_RUNNER_DEBUG: true
+  DATABASE_NAME: "WidgetZBuild"
+  JDBC_URL: "jdbc:sqlserver://localhost;databaseName=WidgetZBuild;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+  group: AutoPilot
+
+stages:
+  - stage: build
+    jobs:
+      - job: deploy_build
+        displayName: "Deploy Build"
+        pool:
+          name: default
+        
+        variables:
+          stage: 'Build'
+          displayName: 'Build'
+          executeBuild: true
+          publishArtifacts: true
+
+        steps:
+          - checkout: self
+          
+          - script: |
+              flyway -baselineOnMigrate=true -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(Build.SourcesDirectory)/flyway.toml" -locations="filesystem:$(Build.SourcesDirectory)/migrations" info clean info -url="$(JDBC_URL)" -cleanDisabled=false -reportFilename="Reports/CleanDB"
+            displayName: 'Clean Build DB'
+            condition: eq(variables['executeBuild'], true)
+
+          - script: |
+              flyway -baselineOnMigrate=true -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(Build.SourcesDirectory)/flyway.toml" -locations="filesystem:$(Build.SourcesDirectory)/migrations" info migrate info -url="$(JDBC_URL)" -cleanDisabled=false -reportFilename="Reports/ValidateVScripts"
+            displayName: 'Migrate Build DB'
+            condition: eq(variables['executeBuild'], true)
+
+          - script: |
+              flyway -baselineOnMigrate=true -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(Build.SourcesDirectory)/flyway.toml" -locations="filesystem:$(Build.SourcesDirectory)/migrations" info undo info -url="$(JDBC_URL)" -cleanDisabled=false -target="$(FIRST_UNDO_SCRIPT)" -reportFilename="Reports/ValidateUScripts"
+            displayName: 'Undo Build DB'
+            condition: eq(variables['executeBuild'], true)
+
+  - stage: prod
+    jobs:
+      - job: prod_preparation
+        displayName: 'Production Deployment Preparation - Report Creation'
+        pool:
+          name: default
+
+        variables:
+          stage: 'Prod'
+          databaseName: "WidgetProd"
+          JDBC: "jdbc:sqlserver://localhost;databaseName=WidgetProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+          check_JDBC: "jdbc:sqlserver://localhost;databaseName=WidgetZCheck;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+          generateDriftAndChangeReport: true
+          failReleaseIfDriftDetected: false
+          staticCodeAnalysis: false
+          publishArtifacts: true
+
+        steps:
+          - checkout: self
+
+          - script: |
+              flyway -baselineOnMigrate=true -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(Build.SourcesDirectory)/flyway.toml" -locations="filesystem:$(Build.SourcesDirectory)/migrations" check -dryrun -changes -drift migrate info "-check.failOnDrift=$(failReleaseIfDriftDetected)" "-check.buildUrl=$(check_JDBC)" -url="$(JDBC)" "-reportFilename=$(Build.SourcesDirectory)/reports/$(databaseName)-Run-$(Build.BuildId)-Check-Report.html"
+            displayName: 'Create Check Reports'
+            condition: eq(variables['generateDriftAndChangeReport'], true)
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Check Report as Artifact'
+            inputs:
+              PathtoPublish: $(Build.SourcesDirectory)/reports
+              ArtifactName: flyway-reports
+
+      - job: deploy_production
+        displayName: 'Deploy Production'
+        pool:
+          name: default
+        dependsOn: prod_preparation
+
+        variables:
+          stage: 'Prod'
+          databaseName: "WidgetProd"
+          JDBC: "jdbc:sqlserver://localhost;databaseName=WidgetProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+          pauseForCodeReview: true
+
+        steps:
+          - checkout: self
+
+          - script: |
+              flyway -user="$(userName)" -password="$(password)" -baselineOnMigrate=true -licenseKey="$(FLYWAY_LICENSE_KEY)" -configFiles="$(Build.SourcesDirectory)/flyway.toml" -locations="filesystem:$(Build.SourcesDirectory)/migrations" info migrate info -url="$(JDBC)" -cleanDisabled=false
+            displayName: 'Migrate Build DB'
+            condition: eq('true', 'true')  # Replace with your condition if needed
