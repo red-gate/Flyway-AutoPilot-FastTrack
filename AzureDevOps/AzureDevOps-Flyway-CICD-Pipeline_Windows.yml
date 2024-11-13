@@ -21,8 +21,8 @@ parameters:
       # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
       TARGET_ENVIRONMENT: "Build" 
       # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
-      TARGET_DATABASE_USERNAME: "MyUserName"
-      TARGET_DATABASE_PASSWORD: "MyPassword"
+      TARGET_DATABASE_USERNAME: "$(TARGET_DATABASE_USERNAME_SECURE)"
+      TARGET_DATABASE_PASSWORD: "$(TARGET_DATABASE_PASSWORD_SECURE)"
       EXECUTE_BUILD: "true" # Turn to false to skip the build stage tasks
       #variableGroupName: 'AutoPilot_Build'  # Side Quest 1 - Securing Variables with Library Groups
   # Test Stage Variables
@@ -34,12 +34,12 @@ parameters:
       # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
       TARGET_ENVIRONMENT: "Test" 
       # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
-      TARGET_DATABASE_USERNAME: "MyUserName"
-      TARGET_DATABASE_PASSWORD: "MyPassword"
+      TARGET_DATABASE_USERNAME: "$(TARGET_DATABASE_USERNAME_SECURE)"
+      TARGET_DATABASE_PASSWORD: "$(TARGET_DATABASE_PASSWORD_SECURE)"
       REPORT_ENVIRONMENT: "Check"
        # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
-      REPORT_DATABASE_USERNAME: "MyUserName"
-      REPORT_DATABASE_PASSWORD: "MyPassword"
+      REPORT_DATABASE_USERNAME: "$(REPORT_DATABASE_USERNAME_SECURE)"
+      REPORT_DATABASE_PASSWORD: "$(REPORT_DATABASE_PASSWORD_SECURE)"
       pauseForCodeReview: "false" # Turn to false to skip the build stage tasks
       generateReport: "true" # Turn to false to skip the CHECK report stage tasks
       #variableGroupName: 'AutoPilot_Build'  # Side Quest 1 - Securing Variables with Library Groups
@@ -52,12 +52,12 @@ parameters:
       # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
       TARGET_ENVIRONMENT: "Prod" 
       # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
-      TARGET_DATABASE_USERNAME: "MyUserName"
-      TARGET_DATABASE_PASSWORD: "MyPassword"
+      TARGET_DATABASE_USERNAME: "$(TARGET_DATABASE_USERNAME_SECURE)"
+      TARGET_DATABASE_PASSWORD: "$(TARGET_DATABASE_PASSWORD_SECURE)"
       REPORT_ENVIRONMENT: "Check"
        # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
-      REPORT_DATABASE_USERNAME: "MyUserName"
-      REPORT_DATABASE_PASSWORD: "MyPassword"
+      REPORT_DATABASE_USERNAME: "$(REPORT_DATABASE_USERNAME_SECURE)"
+      REPORT_DATABASE_PASSWORD: "$(REPORT_DATABASE_PASSWORD_SECURE)"
       pauseForCodeReview: "true" # Turn to false to skip the build stage tasks
       generateReport: "true" # Turn to false to skip the CHECK report stage tasks
       #variableGroupName: 'AutoPilot_Build'  # Side Quest 1 - Securing Variables with Library Groups
@@ -65,7 +65,7 @@ parameters:
 
 pool:
   # Step 2 - Set which Agent Pool is to be used #
-  name: "Local Laptop" # To be set when a self-hosted agent pool is to be used alongside this pipeline
+  name: "Default" # To be set when a self-hosted agent pool is to be used alongside this pipeline
   #vmImage: "windows-latest" # To be used when a microsoft-hosted agent is used alongside this pipeline (Such as ubuntu-latest/windows-latest)
 
 variables:
