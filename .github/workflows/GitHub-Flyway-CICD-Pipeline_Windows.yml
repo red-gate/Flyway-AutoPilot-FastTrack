@@ -12,7 +12,6 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 env:
- 
    # Enable this for additional debug logging
   ACTIONS_RUNNER_DEBUG: false
 
@@ -25,7 +24,9 @@ env:
   BUILD_DATABASE_USERNAME: "${{ secrets.BUILD_DATABASE_USERNAME }}"
   BUILD_DATABASE_PASSWORD: "${{ secrets.BUILD_DATABASE_PASSWORD }}"
   EXECUTE_BUILD: "true" # Turn to false to skip the build stage tasks
-  ### Test Stage ###
+  ### End of Build Stage Variables
+  
+  ### Test Stage Variables ###
   TEST_DATABASE_NAME: "AutoPilotTest"
   # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
   TEST_ENVIRONMENT: "Test" 
@@ -34,11 +35,12 @@ env:
   TEST_DATABASE_PASSWORD: "${{ secrets.TEST_DATABASE_PASSWORD }}"
   TEST_REPORT_ENVIRONMENT: "Check"
    # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
-  TEST_REPORT_DATABASE_USERNAME: "${{ secrets.REPORT_DATABASE_USERNAME }}"
-  TEST_REPORT_DATABASE_PASSWORD: "${{ secrets.REPORT_DATABASE_PASSWORD }}"
-  TEST_pauseForCodeReview: "false" # Turn to false to skip the build stage tasks
+  TEST_REPORT_DATABASE_USERNAME: "${{ secrets.TEST_REPORT_DATABASE_USERNAME }}"
+  TEST_REPORT_DATABASE_PASSWORD: "${{ secrets.TEST_REPORT_DATABASE_PASSWORD }}"
   TEST_generateReport: "true" # Turn to false to skip the CHECK report stage tasks
-  ### Prod Stage ###
+  ### End of Test Stage Variables ###
+  
+  ### Prod Stage Variables ###
   PROD_DATABASE_NAME: "AutoPilotProd"
   # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
   PROD_ENVIRONMENT: "Prod" 
@@ -47,20 +49,19 @@ env:
   PROD_DATABASE_PASSWORD: "${{ secrets.TEST_DATABASE_PASSWORD }}"
   PROD_REPORT_ENVIRONMENT: "Check"
    # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
-  PROD_REPORT_DATABASE_USERNAME: "${{ secrets.REPORT_DATABASE_USERNAME }}"
-  PROD_REPORT_DATABASE_PASSWORD: "${{ secrets.REPORT_DATABASE_PASSWORD }}"
-  PROD_pauseForCodeReview: "false" # Turn to false to skip the build stage tasks
-  PROD_generateReport: "true" # Turn to false to skip the CHECK report stage tasks
-
+  PROD_REPORT_DATABASE_USERNAME: "${{ secrets.PROD_REPORT_DATABASE_USERNAME }}"
+  PROD_REPORT_DATABASE_PASSWORD: "${{ secrets.PROD_REPORT_DATABASE_PASSWORD }}"
+  PROD_generateReport: "false" # Turn to false to skip the CHECK report stage tasks 
+  ### End of Prod Stage Variables ###
   
-
   # Repository Secret - Create this within the Projects Settings > Secrets > Actions section
   # Personal Access Tokens (PATs) are the recommended method of authorizing Flyway during a non-interactive session
   # Details on how to do this can be found here: https://documentation.red-gate.com/flyway/flyway-cli-and-api/tutorials/tutorial-personal-access-tokens
+  # Documentation on all available Authentication methods can be found here: https://documentation.red-gate.com/fd/flyway-licensing-263061944.html
   FLYWAY_EMAIL: "${{ secrets.FLYWAY_EMAIL }}" # Enter the email address linked to the Redgate Account that created the PAT
   FLYWAY_TOKEN: "${{ secrets.FLYWAY_TOKEN }}" # Enter the PAT Value (This should be treated like a password and thus as a secure variable.
   # FLYWAY_LICENSE_KEY: "${{ secrets.FLYWAY_LICENSE_KEY }}" # Deprecated Authentication Method. Consider using the new PAT method above for added security.
-
+  
   BASELINE_VERSION: "001" # This should match the version number of your baseline script
   FIRST_UNDO_SCRIPT: "002" # This should match the first undo version in your project
 
@@ -84,14 +85,8 @@ jobs:
     env:
       stage: 'Build'
       displayName: 'Build'
-      # Environment Secrets - In a Production setup, Ensure all of the below have been created as an Environment Secret (Projects Settings > Secrets > Actions section, specially related to the environment in question) #
-      DATABASE_NAME: "${{ env.BUILD_DATABASE_NAME }}"
-      ENVIRONMENT: "Build" # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
-      # Consider using Secure Variables for sensitive information like usernames/passwords
-      TARGET_DATABASE_USERNAME : "${{ env.BUILD_DATABASE_USERNAME }}" # If using SQL Authentication, make sure to populate these fields!
-      TARGET_DATABASE_PASSWORD : "${{ env.BUILD_DATABASE_PASSWORD }}" # If using SQL Authentication, make sure to populate these fields!
-      executeBuild: "${{ env.EXECUTE_BUILD }}"
-      publishArtifacts: "true"
+      FLYWAY_CHECK_DRIFT_ON_MIGRATE: "true" # Set this value to true to enable drift checks during each MIGRATE step (More details found here - https://flyway.red-gate.com/pipelines/sample)
+      publishArtifacts: 'true'
  
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -103,38 +98,54 @@ jobs:
         run: |
           $scriptPath = "${{ GITHUB.WORKSPACE }}/scripts/Flyway_DownloadAndInstallCLI.ps1"
           if (Test-Path $scriptPath) {
-            Write-Host "Script found. Running Flyway_DownloadAndInstallCLI.ps1..."
+            echo "Script found. Running Flyway_DownloadAndInstallCLI.ps1..."
             & $scriptPath
-            Write-Host "Updating PATH environment variable to include Flyway CLI Path"
+            echo "Updating PATH environment variable to include Flyway CLI Path"
               echo "${{ env.FLYWAY_INSTALL_DIRECTORY }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           } 
           else {
-            Write-Host "Error: Script not found at path $scriptPath"
+            echo "Error: Script not found at path $scriptPath"
             exit 1
           }
+      # Pre-Req - Set Global Variables as Environment Variables
+      - name: "GitHub - Set Environment Variables"
+        if: success()
+        run: |
+         echo "Pulling GitHub Global Variables and Setting as Environment Variables"
+         $DATABASE_NAME = "${{ env.BUILD_DATABASE_NAME }}"
+         $ENVIRONMENT = "${{ env.BUILD_ENVIRONMENT }}"
+         $TARGET_DATABASE_USERNAME = "${{ env.BUILD_DATABASE_USERNAME }}"
+         $TARGET_DATABASE_PASSWORD = "${{ env.BUILD_DATABASE_PASSWORD }}"
+         $EXECUTE_BUILD = "${{ env.EXECUTE_BUILD }}"
+         echo "Pushing Local Variables to Environment Variable"
+         echo "DATABASE_NAME=${DATABASE_NAME}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+         echo "ENVIRONMENT=${ENVIRONMENT}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+         echo "TARGET_DATABASE_USERNAME=${TARGET_DATABASE_USERNAME}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+         echo "TARGET_DATABASE_PASSWORD=${TARGET_DATABASE_PASSWORD}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+         echo "EXECUTE_BUILD=${EXECUTE_BUILD}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       # Step 1 - Flyway License Authentication #
       - name: Flyway Authentication
-        if: env.executeBuild == 'true'
+        if: ${{ env.EXECUTE_BUILD == 'true' && success() }}
         run: |
-         flyway auth -IAgreeToTheEula -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
+         flyway auth -IAgreeToTheEula -email="${{ env.FLYWAY_EMAIL }}" -token="${{ env.FLYWAY_TOKEN }}"
       # Step 2 - Ensure the Build Database is cleaned of all objects, meaning the build starts from scratch
       - name: Clean Build DB
-        if: env.executeBuild == 'true'
+        if: ${{ env.EXECUTE_BUILD == 'true' && success() }}
         run: |
           flyway info clean info -environment="${{ env.ENVIRONMENT }}" -user="${{ env.TARGET_DATABASE_USERNAME }}" -password="${{ env.TARGET_DATABASE_PASSWORD }}" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" -cleanDisabled='false' "-plugins.clean.mode=all"
       # Step 3 - Migrate all scripts from the migration folder, to verify they can be deployed against an empty database. This is the quickest way to get feedback about problematic scripts
       - name: Migrate Build DB
-        if: env.executeBuild == 'true'
+        if: ${{ env.EXECUTE_BUILD == 'true' && success() }}
         run: |
           flyway info migrate info -environment="${{ env.ENVIRONMENT }}" -user="${{ env.TARGET_DATABASE_USERNAME }}" -password="${{ env.TARGET_DATABASE_PASSWORD }}" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" -cleanDisabled='false' -baselineOnMigrate="true" "-publishResult=${{ env.FLYWAY_PUBLISH_RESULT }}" "-flywayServicePublish.publishReport=${{ env.FLYWAY_PUBLISH_RESULT }}" "-reportEnabled=${{ env.FLYWAY_PUBLISH_RESULT }}"
       # Step 4 (Optional) - Undo all relevant migrations using corresponding rollback script, to validate they can be run. This helps to reduce the chance the script will fail during a real life rollback scenario 
       - name: undo Build DB
-        if: env.executeBuild == 'true'
+        if: ${{ env.EXECUTE_BUILD == 'true' && success() }}
         run: |
           flyway info undo info -environment="${{ env.ENVIRONMENT }}" -user=${{ env.TARGET_DATABASE_USERNAME }} -password=${{ env.TARGET_DATABASE_PASSWORD }} -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" -baselineOnMigrate="true" -cleanDisabled='false' -target="${{ env.FIRST_UNDO_SCRIPT }}"
       # GitHub - After migration scripts are validated, publish them as an artifact
       - name: Publish Validated Migration Scripts as Artifact
-        if: env.publishArtifacts == 'true'
+        if: ${{ env.publishArtifacts == 'true' && success() }}
         uses: actions/upload-artifact@v4
         with: 
           name: flyway-build-artifact-${{ github.run_number }}
@@ -158,14 +169,6 @@ jobs:
     needs: build
     env:
       stage: 'Test'
-      DATABASE_NAME: "${{ env.TEST_ENVIRONMENT }}"
-      ENVIRONMENT: "Test" # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
-      TARGET_DATABASE_USERNAME : "${{ env.TEST_DATABASE_USERNAME }}" # If using SQL Authentication, make sure to populate these fields!
-      TARGET_DATABASE_PASSWORD : "${{ env.TEST_DATABASE_PASSWORD }}" # If using SQL Authentication, make sure to populate these fields!
-      CHECK_ENVIRONMENT: "${{ env.TEST_REPORT_ENVIRONMENT }}" # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
-      CHECK_DATABASE_USERNAME : "${{ env.TEST_REPORT_DATABASE_USERNAME }}" # If using SQL Authentication, make sure to populate these fields!
-      CHECK_DATABASE_PASSWORD : "${{ env.TEST_REPORT_DATABASE_PASSWORD }}" # If using SQL Authentication, make sure to populate these fields!
-      generateReport: "${{ env.TEST_generateReport }}"
  
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -182,36 +185,58 @@ jobs:
         run: |
           $scriptPath = "${{ GITHUB.WORKSPACE }}/scripts/Flyway_DownloadAndInstallCLI.ps1"
           if (Test-Path $scriptPath) {
-            Write-Host "Script found. Running Flyway_DownloadAndInstallCLI.ps1..."
+            echo "Script found. Running Flyway_DownloadAndInstallCLI.ps1..."
             & $scriptPath
-            Write-Host "Updating PATH environment variable to include Flyway CLI Path"
+            echo "Updating PATH environment variable to include Flyway CLI Path"
               echo "${{ env.FLYWAY_INSTALL_DIRECTORY }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           } 
           else {
-            Write-Host "Error: Script not found at path $scriptPath"
+            echo "Error: Script not found at path $scriptPath"
             exit 1
           }
+      # Pre-Req - Set Global Variables as Environment Variables
+      - name: "GitHub - Set Environment Variables"
+        if: success() 
+        run: |
+         echo "Pulling GitHub Global Variables and Setting as Environment Variables"
+         $DATABASE_NAME = "${{ env.TEST_DATABASE_NAME }}"
+         $ENVIRONMENT = "${{ env.TEST_ENVIRONMENT }}"
+         $TARGET_DATABASE_USERNAME = "${{ env.TEST_DATABASE_USERNAME }}"
+         $TARGET_DATABASE_PASSWORD = "${{ env.TEST_DATABASE_PASSWORD }}"
+         $REPORT_ENVIRONMENT = "${{ env.TEST_REPORT_ENVIRONMENT }}"
+         $REPORT_DATABASE_USERNAME = "${{ env.TEST_REPORT_DATABASE_USERNAME }}"
+         $REPORT_DATABASE_PASSWORD = "${{ env.TEST_REPORT_DATABASE_PASSWORD }}"
+         $generateReport = "${{ env.TEST_generateReport }}"
+         echo "Pushing Local Variables to Environment Variable"
+         echo "DATABASE_NAME=${DATABASE_NAME}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+         echo "ENVIRONMENT=${ENVIRONMENT}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+         echo "TARGET_DATABASE_USERNAME=${TARGET_DATABASE_USERNAME}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+         echo "TARGET_DATABASE_PASSWORD=${TARGET_DATABASE_PASSWORD}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+         echo "REPORT_ENVIRONMENT=${REPORT_ENVIRONMENT}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+         echo "REPORT_DATABASE_USERNAME=${REPORT_DATABASE_USERNAME}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+         echo "REPORT_DATABASE_PASSWORD=${REPORT_DATABASE_PASSWORD}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+         echo "generateReport=${generateReport}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       # Step 1 - Flyway License Authentication #
       - name: Flyway Authentication
-      # if: 
+        if: success()
         run: |
-         flyway auth -IAgreeToTheEula -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
+         flyway auth -IAgreeToTheEula -email="${{ env.FLYWAY_EMAIL }}" -token="${{ env.FLYWAY_TOKEN }}"
       # Step 2 - Create Check Report
       - name: Create Check Reports
-        if: env.generateReport == 'true'
+        if: ${{ env.generateReport == 'true' && success() }}
         run: |
-          flyway check -dryrun -changes -drift -environment="${{ env.ENVIRONMENT }}" -user=${{ env.TARGET_DATABASE_USERNAME }} -password=${{ env.TARGET_DATABASE_PASSWORD }} -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" "-check.buildEnvironment=${{ env.CHECK_ENVIRONMENT }}" "-environments.${{ env.CHECK_ENVIRONMENT }}.user=${{ env.CHECK_DATABASE_USERNAME }}" "-environments.${{ env.CHECK_ENVIRONMENT }}.password=${{ env.CHECK_DATABASE_PASSWORD }}" "-reportFilename=${{ GITHUB.WORKSPACE }}\reports\${{ env.DATABASE_NAME }}-Run-${{ GITHUB.RUN_ID }}-${{ env.ENVIRONMENT }}-Check-Report.html" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" "-publishResult=${{ env.FLYWAY_PUBLISH_RESULT }}" "-flywayServicePublish.publishReport=${{ env.FLYWAY_PUBLISH_RESULT }}" "-reportEnabled=${{ env.FLYWAY_PUBLISH_RESULT }}"
+          flyway check -dryrun -changes -drift -environment="${{ env.ENVIRONMENT }}" -user=${{ env.TARGET_DATABASE_USERNAME }} -password=${{ env.TARGET_DATABASE_PASSWORD }} -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" "-check.buildEnvironment=${{ env.REPORT_ENVIRONMENT }}" "-environments.${{ env.REPORT_ENVIRONMENT }}.user=${{ env.REPORT_DATABASE_USERNAME }}" "-environments.${{ env.REPORT_ENVIRONMENT }}.password=${{ env.REPORT_DATABASE_PASSWORD }}" "-reportFilename=${{ GITHUB.WORKSPACE }}\reports\${{ env.DATABASE_NAME }}-Run-${{ GITHUB.RUN_ID }}-${{ env.ENVIRONMENT }}-Check-Report.html" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" "-publishResult=${{ env.FLYWAY_PUBLISH_RESULT }}" "-flywayServicePublish.publishReport=${{ env.FLYWAY_PUBLISH_RESULT }}" "-reportEnabled=${{ env.FLYWAY_PUBLISH_RESULT }}"
         continue-on-error: true
       # Step 3 - Publish Check Report
       - name: Publish Check Report as Artifact
-        if: env.generateReport == 'true'
+        if: ${{ env.generateReport == 'true' && success() }}
         uses: actions/upload-artifact@v4
         with: 
           name: flyway-reports-test
           path: ${{ GITHUB.WORKSPACE }}\reports\**\*     
       # Step 4 - Deploy pending migrations to target database
       - name: Migrate Test DB
-        if: ${{ true }}
+        if: success()
         run: |
           flyway info migrate info -environment="${{ env.ENVIRONMENT }}" -user="${{ env.TARGET_DATABASE_USERNAME }}" -password="${{ env.TARGET_DATABASE_PASSWORD }}" -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" "-publishResult=${{ env.FLYWAY_PUBLISH_RESULT }}" "-flywayServicePublish.publishReport=${{ env.FLYWAY_PUBLISH_RESULT }}" "-reportEnabled=${{ env.FLYWAY_PUBLISH_RESULT }}"
 
@@ -224,14 +249,6 @@ jobs:
     needs: test
     env:
       stage: 'Prod'
-      DATABASE_NAME: "${{ env.PROD_ENVIRONMENT }}"
-      ENVIRONMENT: "Test" # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
-      TARGET_DATABASE_USERNAME : "${{ env.PROD_DATABASE_USERNAME }}" # If using SQL Authentication, make sure to populate these fields!
-      TARGET_DATABASE_PASSWORD : "${{ env.PROD_DATABASE_PASSWORD }}" # If using SQL Authentication, make sure to populate these fields!
-      CHECK_ENVIRONMENT: "${{ env.PROD_REPORT_ENVIRONMENT }}" # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
-      CHECK_DATABASE_USERNAME : "${{ env.PROD_REPORT_DATABASE_USERNAME }}" # If using SQL Authentication, make sure to populate these fields!
-      CHECK_DATABASE_PASSWORD : "${{ env.PROD_REPORT_DATABASE_PASSWORD }}" # If using SQL Authentication, make sure to populate these fields!
-      generateReport: "${{ env.PROD_generateReport }}"
  
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -248,35 +265,57 @@ jobs:
         run: |
           $scriptPath = "${{ GITHUB.WORKSPACE }}/scripts/Flyway_DownloadAndInstallCLI.ps1"
           if (Test-Path $scriptPath) {
-            Write-Host "Script found. Running Flyway_DownloadAndInstallCLI.ps1..."
+            echo "Script found. Running Flyway_DownloadAndInstallCLI.ps1..."
             & $scriptPath
-            Write-Host "Updating PATH environment variable to include Flyway CLI Path"
+            echo "Updating PATH environment variable to include Flyway CLI Path"
               echo "${{ env.FLYWAY_INSTALL_DIRECTORY }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           } 
           else {
-            Write-Host "Error: Script not found at path $scriptPath"
+            echo "Error: Script not found at path $scriptPath"
             exit 1
           }
+      # Pre-Req - Set Global Variables as Environment Variables
+      - name: "GitHub - Set Environment Variables"
+        if: success()
+        run: |
+         echo "Pulling GitHub Global Variables and Setting as Environment Variables"
+         $DATABASE_NAME = "${{ env.PROD_DATABASE_NAME }}"
+         $ENVIRONMENT = "${{ env.PROD_ENVIRONMENT }}"
+         $TARGET_DATABASE_USERNAME = "${{ env.PROD_DATABASE_USERNAME }}"
+         $TARGET_DATABASE_PASSWORD = "${{ env.PROD_DATABASE_PASSWORD }}"
+         $REPORT_ENVIRONMENT = "${{ env.PROD_REPORT_ENVIRONMENT }}"
+         $REPORT_DATABASE_USERNAME = "${{ env.PROD_REPORT_DATABASE_USERNAME }}"
+         $REPORT_DATABASE_PASSWORD = "${{ env.PROD_REPORT_DATABASE_PASSWORD }}"
+         $generateReport = "${{ env.PROD_generateReport }}"
+         echo "Pushing Local Variables to Environment Variable"
+         echo "DATABASE_NAME=${DATABASE_NAME}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+         echo "ENVIRONMENT=${ENVIRONMENT}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+         echo "TARGET_DATABASE_USERNAME=${TARGET_DATABASE_USERNAME}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+         echo "TARGET_DATABASE_PASSWORD=${TARGET_DATABASE_PASSWORD}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+         echo "REPORT_ENVIRONMENT=${REPORT_ENVIRONMENT}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+         echo "REPORT_DATABASE_USERNAME=${REPORT_DATABASE_USERNAME}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+         echo "REPORT_DATABASE_PASSWORD=${REPORT_DATABASE_PASSWORD}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+         echo "generateReport=${generateReport}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
        # Step 1 - Flyway License Authentication #
       - name: Flyway Authentication
-      # if: 
+        if: success() 
         run: |
-         flyway auth -IAgreeToTheEula -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)"
+         flyway auth -IAgreeToTheEula -email="${{ env.FLYWAY_EMAIL }}" -token="${{ env.FLYWAY_TOKEN }}"
       # Step 2 - Create Check Report 
       - name: Create Check Reports
-        if: env.generateReport == 'true'
+        if: ${{ env.generateReport == 'true' && success() }}
         run: |
-          flyway check -dryrun -changes -drift -environment="${{ env.ENVIRONMENT }}" -user=${{ env.TARGET_DATABASE_USERNAME }} -password=${{ env.TARGET_DATABASE_PASSWORD }} -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" "-check.buildEnvironment=${{ env.CHECK_ENVIRONMENT }}" "-environments.${{ env.CHECK_ENVIRONMENT }}.user=${{ env.CHECK_DATABASE_USERNAME }}" "-environments.${{ env.CHECK_ENVIRONMENT }}.password=${{ env.CHECK_DATABASE_PASSWORD }}" "-reportFilename=${{ GITHUB.WORKSPACE }}\reports\${{ env.DATABASE_NAME }}-Run-${{ GITHUB.RUN_ID }}-${{ env.ENVIRONMENT }}-Check-Report.html" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" "-publishResult=${{ env.FLYWAY_PUBLISH_RESULT }}" "-flywayServicePublish.publishReport=${{ env.FLYWAY_PUBLISH_RESULT }}" "-reportEnabled=${{ env.FLYWAY_PUBLISH_RESULT }}"
+          flyway check -dryrun -changes -drift -environment="${{ env.ENVIRONMENT }}" -user=${{ env.TARGET_DATABASE_USERNAME }} -password=${{ env.TARGET_DATABASE_PASSWORD }} -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" "-check.buildEnvironment=${{ env.REPORT_ENVIRONMENT }}" "-environments.${{ env.REPORT_ENVIRONMENT }}.user=${{ env.REPORT_DATABASE_USERNAME }}" "-environments.${{ env.REPORT_ENVIRONMENT }}.password=${{ env.REPORT_DATABASE_PASSWORD }}" "-reportFilename=${{ GITHUB.WORKSPACE }}\reports\${{ env.DATABASE_NAME }}-Run-${{ GITHUB.RUN_ID }}-${{ env.ENVIRONMENT }}-Check-Report.html" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" "-publishResult=${{ env.FLYWAY_PUBLISH_RESULT }}" "-flywayServicePublish.publishReport=${{ env.FLYWAY_PUBLISH_RESULT }}" "-reportEnabled=${{ env.FLYWAY_PUBLISH_RESULT }}"
         continue-on-error: true
       # Step 3 - Publish Check Report
       - name: Publish Check Report as Artifact
-        if: env.generateReport == 'true'
+        if: ${{ env.generateReport == 'true' && success() }}
         uses: actions/upload-artifact@v4
         with: 
           name: flyway-reports-prod
           path: ${{ GITHUB.WORKSPACE }}\reports\**\*
       # Step 4 - Deploy pending migrations to target database
       - name: Migrate Production DB
-        if: ${{ true }}
+        if: success()
         run: |
           flyway info migrate info -environment="${{ env.ENVIRONMENT }}" -user="${{ env.TARGET_DATABASE_USERNAME }}" -password="${{ env.TARGET_DATABASE_PASSWORD }}" -baselineOnMigrate="true" -licenseKey="${{ env.FLYWAY_LICENSE_KEY }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" "-publishResult=${{ env.FLYWAY_PUBLISH_RESULT }}" "-flywayServicePublish.publishReport=${{ env.FLYWAY_PUBLISH_RESULT }}" "-reportEnabled=${{ env.FLYWAY_PUBLISH_RESULT }}"

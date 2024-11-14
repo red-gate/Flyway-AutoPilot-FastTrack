@@ -83,6 +83,7 @@ variables:
 
   # Step 3: Personal Access Tokens (PATs) are the recommended method of authorizing Flyway during a non-interactive session
   # Details on how to do this can be found here: https://documentation.red-gate.com/flyway/flyway-cli-and-api/tutorials/tutorial-personal-access-tokens
+  # Documentation on all available Authentication methods can be found here: https://documentation.red-gate.com/fd/flyway-licensing-263061944.html
   FLYWAY_EMAIL: "$(FLYWAY_EMAIL_SECURE)" # Enter the email address linked to the Redgate Account that created the PAT
   # PAT's should always be treated as secure. Therefore, we recommend creating a secure variable called FLYWAY_TOKEN_SECURE. To use a secret in ADO, this needs to be mapped as an environment variable for each section
   FLYWAY_TOKEN: "$(FLYWAY_TOKEN_SECURE)" # Enter the PAT Value (This should be treated like a password and thus as a secure variable. Consider using a Library Group or Secure Variable for this value)
