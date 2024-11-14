@@ -22,8 +22,9 @@ env:
   # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
   BUILD_ENVIRONMENT: "Build" 
   # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
-  BUILD_DATABASE_USERNAME: "${{ secrets.BUILD_DATABASE_USERNAME }}"
-  BUILD_DATABASE_PASSWORD: "${{ secrets.BUILD_DATABASE_PASSWORD }}"
+  # For added security, ensure sensitive information, like the ones below are set as secrets - Create this within the Projects Settings > Secrets > Actions section
+  BUILD_DATABASE_USERNAME: "MyUsername" # Example secret variable convention: ${{ secrets.BUILD_DATABASE_USERNAME }}
+  BUILD_DATABASE_PASSWORD: "MyPassword" # Example secret variable convention: ${{ secrets.BUILD_DATABASE_PASSWORD }}
   EXECUTE_BUILD: "true" # Turn to false to skip the build stage tasks
   ### End of Build Stage Variables
   
@@ -32,12 +33,14 @@ env:
   # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
   TEST_ENVIRONMENT: "Test" 
   # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
-  TEST_DATABASE_USERNAME: "${{ secrets.TEST_DATABASE_USERNAME }}"
-  TEST_DATABASE_PASSWORD: "${{ secrets.TEST_DATABASE_PASSWORD }}"
+  # For added security, ensure sensitive information, like the ones below are set as secrets - Create this within the Projects Settings > Secrets > Actions section
+  TEST_DATABASE_USERNAME: "MyUsername" # Example secret variable convention: ${{ secrets.TEST_DATABASE_USERNAME }}
+  TEST_DATABASE_PASSWORD: "MyPassword" # Example secret variable convention: ${{ secrets.TEST_DATABASE_PASSWORD }}
   TEST_REPORT_ENVIRONMENT: "Check"
    # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
-  TEST_REPORT_DATABASE_USERNAME: "${{ secrets.TEST_REPORT_DATABASE_USERNAME }}"
-  TEST_REPORT_DATABASE_PASSWORD: "${{ secrets.TEST_REPORT_DATABASE_PASSWORD }}"
+   # For added security, ensure sensitive information, like the ones below are set as secrets - Create this within the Projects Settings > Secrets > Actions section
+  TEST_REPORT_DATABASE_USERNAME: "MyUsername" # Example secret variable convention: ${{ secrets.TEST_REPORT_DATABASE_USERNAME }}
+  TEST_REPORT_DATABASE_PASSWORD: "MyPassword" # Example secret variable convention: ${{ secrets.TEST_REPORT_DATABASE_USERNAME }}
   TEST_generateReport: "true" # Turn to false to skip the CHECK report stage tasks
   ### End of Test Stage Variables ###
   
@@ -46,12 +49,12 @@ env:
   # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
   PROD_ENVIRONMENT: "Prod" 
   # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
-  PROD_DATABASE_USERNAME: "${{ secrets.TEST_DATABASE_USERNAME }}"
-  PROD_DATABASE_PASSWORD: "${{ secrets.TEST_DATABASE_PASSWORD }}"
+  PROD_DATABASE_USERNAME: "MyUsername" # Example secret variable convention: ${{ secrets.PROD_DATABASE_USERNAME }}
+  PROD_DATABASE_PASSWORD: "MyPassword" # Example secret variable convention: ${{ secrets.PROD_DATABASE_PASSWORD }}
   PROD_REPORT_ENVIRONMENT: "Check"
    # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
-  PROD_REPORT_DATABASE_USERNAME: "${{ secrets.PROD_REPORT_DATABASE_USERNAME }}"
-  PROD_REPORT_DATABASE_PASSWORD: "${{ secrets.PROD_REPORT_DATABASE_PASSWORD }}"
+  PROD_REPORT_DATABASE_USERNAME: "MyUsername" # Example secret variable convention: ${{ secrets.PROD_REPORT_DATABASE_USERNAME }}
+  PROD_REPORT_DATABASE_PASSWORD: "MyPassword" # Example secret variable convention: ${{ secrets.PROD_REPORT_DATABASE_PASSWORD }}
   PROD_generateReport: "false" # Turn to false to skip the CHECK report stage tasks 
   ### End of Prod Stage Variables ###
 
@@ -67,7 +70,7 @@ env:
   FIRST_UNDO_SCRIPT: "002" # This should match the first undo version in your project
 
   # Optional - For ephemeral agents/runners, it's necessary to validate Flyway is installed on each run. Set the below to true to enable the functionality
-  FLYWAY_CLI_INSTALL_CHECK: "true" # Setting to false will skip the Flyway CLI check step
+  FLYWAY_CLI_INSTALL_CHECK: "false" # Setting to false will skip the Flyway CLI check step
   FLYWAY_VERSION: "10.21.0" # This outlines the version of Flyway CLI that will be downloaded if no Flyway CLI is detected on the target agent
   FLYWAY_INSTALL_DIRECTORY: "" # The path on the agent machine where Flyway CLI will be installed  
 
@@ -81,7 +84,7 @@ jobs:
   build:
     name: Deploy Build
     # The type of runner that the job will run on
-    runs-on: "ubuntu-latest" # Options - self-hosted/ubuntu-latest/windows-latest (See here for more details on GitHub hosted runners - https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners)
+    runs-on: "self-hosted" # Options - self-hosted/ubuntu-latest/windows-latest (See here for more details on GitHub hosted runners - https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners)
     environment: 'build' #Ensure this environment name is setup in the projects Settings>Environment area. Ensuring any reviewers are also configFilesured 
     env:
       stage: 'Build'
@@ -153,7 +156,7 @@ jobs:
   test:
     name: Deploy Test
     # The type of runner that the job will run on
-    runs-on: "ubuntu-latest" # Options - self-hosted/ubuntu-latest/windows-latest (See here for more details on GitHub hosted runners - https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners)
+    runs-on: "self-hosted" # Options - self-hosted/ubuntu-latest/windows-latest (See here for more details on GitHub hosted runners - https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners)
     environment: 'test' #Ensure this environment name is setup in the projects Settings>Environment area. Ensuring any reviewers are also configFilesured 
     if: ${{ true }} #Set this variable to false to temporarily disable the job
     needs: build
@@ -221,7 +224,7 @@ jobs:
   prod:
     name: Deploy Prod
     # The type of runner that the job will run on
-    runs-on: "ubuntu-latest" # Options - self-hosted/ubuntu-latest/windows-latest (See here for more details on GitHub hosted runners - https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners)
+    runs-on: "self-hosted" # Options - self-hosted/ubuntu-latest/windows-latest (See here for more details on GitHub hosted runners - https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners)
     environment: 'prod' #Ensure this environment name is setup in the projects Settings>Environment area. Ensuring any reviewers are also configFilesured 
     if: ${{ true }} #Set this variable to false to temporarily disable the job
     needs: test
