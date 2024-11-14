@@ -49,10 +49,12 @@ env:
   # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
   PROD_ENVIRONMENT: "Prod" 
   # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
+  # For added security, ensure sensitive information, like the ones below are set as secrets - Create this within the Projects Settings > Secrets > Actions section
   PROD_DATABASE_USERNAME: "MyUsername" # Example secret variable convention: ${{ secrets.PROD_DATABASE_USERNAME }}
   PROD_DATABASE_PASSWORD: "MyPassword" # Example secret variable convention: ${{ secrets.PROD_DATABASE_PASSWORD }}
   PROD_REPORT_ENVIRONMENT: "Check"
    # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
+   # For added security, ensure sensitive information, like the ones below are set as secrets - Create this within the Projects Settings > Secrets > Actions section
   PROD_REPORT_DATABASE_USERNAME: "MyUsername" # Example secret variable convention: ${{ secrets.PROD_REPORT_DATABASE_USERNAME }}
   PROD_REPORT_DATABASE_PASSWORD: "MyPassword" # Example secret variable convention: ${{ secrets.PROD_REPORT_DATABASE_PASSWORD }}
   PROD_generateReport: "false" # Turn to false to skip the CHECK report stage tasks 
