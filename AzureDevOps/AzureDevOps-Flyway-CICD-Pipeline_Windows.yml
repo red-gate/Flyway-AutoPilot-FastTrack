@@ -100,6 +100,7 @@ variables:
 
   # Optional: Side Quest #2 - Using the Flyway Pipeline Integration - https://flyway.red-gate.com/ For More Details
   FLYWAY_PUBLISH_RESULT: "true" # Set this value to true to enable Flyway Pipelines and track your releases centrally!
+  FLYWAY_DRIFT_ON_MIGRATE: "true" # Set this value to true to enable Flyway Pipelines drift detection and track your drift centrally!
 
 stages:
   - stage: Build # Tip - The build stage is a great way of gaining quick early feedback about upcoming releases. It simply needs to point to an empty database to function.
@@ -203,8 +204,8 @@ stages:
         # Side Quest 2 - Securing Variables with Library Groups - DATABASE_NAME/TARGET_ENVIRONMENT/TARGET_DATABASE_USER/TARGET_DATABASE_PASSWORD/EXECUTE_BUILD
         #- group: "AutoPilot_Test"
         # Example Variable syntax if required. Sensitive values should ALWAYS be kept secure in either Variable Groups (See above) or Secure Variables (Click 'Variables' in top right corner of pipeline editor)
-      - name: Example
-        value: "MyExampleValue"
+      - name: FLYWAY_CHECK_DRIFT_ON_MIGRATE
+        value: "$(FLYWAY_DRIFT_ON_MIGRATE)" # Setting this variable to true will enable the Flyway Pipelines drift detection so you can track your drift centrally!
     jobs:
     - job: ChangeReport
       displayName: "Flyway - Pre Release Change Report"
@@ -340,9 +341,8 @@ stages:
         # Side Quest 2 - Securing Variables with Library Groups - DATABASE_NAME/TARGET_ENVIRONMENT/TARGET_DATABASE_USER/TARGET_DATABASE_PASSWORD/EXECUTE_BUILD
         #- group: "AutoPilot_Prod"
         # Example Variable syntax if required. Sensitive values should ALWAYS be kept secure in either Variable Groups (See above) or Secure Variables (Click 'Variables' in top right corner of pipeline editor)
-      - name: Example
-        value: "MyExampleValue"
-
+      - name: FLYWAY_CHECK_DRIFT_ON_MIGRATE
+        value: "$(FLYWAY_DRIFT_ON_MIGRATE)" # Setting this variable to true will enable the Flyway Pipelines drift detection so you can track your drift centrally!
     jobs:
     - job: ChangeReport
       displayName: "Flyway - Pre Release Change Report"
