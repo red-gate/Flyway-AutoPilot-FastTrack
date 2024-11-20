@@ -212,7 +212,7 @@ jobs:
          $REPORT_DATABASE_USERNAME = "${{ env.TEST_REPORT_DATABASE_USERNAME }}"
          $REPORT_DATABASE_PASSWORD = "${{ env.TEST_REPORT_DATABASE_PASSWORD }}"
          $generateReport = "${{ env.TEST_generateReport }}"
-         $FLYWAY_CHECK_DRIFT_ON_MIGRATE = "${{ env.FLYWAY_DRIFT_ON_MIGRATE }}
+         $FLYWAY_CHECK_DRIFT_ON_MIGRATE = "${{ env.FLYWAY_DRIFT_ON_MIGRATE }}"
          echo "Pushing Local Variables to Environment Variable"
          echo "DATABASE_NAME=${DATABASE_NAME}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
          echo "ENVIRONMENT=${ENVIRONMENT}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
@@ -294,6 +294,7 @@ jobs:
          $REPORT_DATABASE_USERNAME = "${{ env.PROD_REPORT_DATABASE_USERNAME }}"
          $REPORT_DATABASE_PASSWORD = "${{ env.PROD_REPORT_DATABASE_PASSWORD }}"
          $generateReport = "${{ env.PROD_generateReport }}"
+         $FLYWAY_CHECK_DRIFT_ON_MIGRATE = "${{ env.FLYWAY_DRIFT_ON_MIGRATE }}"
          echo "Pushing Local Variables to Environment Variable"
          echo "DATABASE_NAME=${DATABASE_NAME}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
          echo "ENVIRONMENT=${ENVIRONMENT}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
@@ -303,6 +304,7 @@ jobs:
          echo "REPORT_DATABASE_USERNAME=${REPORT_DATABASE_USERNAME}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
          echo "REPORT_DATABASE_PASSWORD=${REPORT_DATABASE_PASSWORD}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
          echo "generateReport=${generateReport}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+         echo "FLYWAY_CHECK_DRIFT_ON_MIGRATE=${FLYWAY_CHECK_DRIFT_ON_MIGRATE}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
        # Step 1 - Flyway License Authentication #
       - name: Flyway Authentication
         if: success() 
