@@ -91,7 +91,6 @@ jobs:
     env:
       stage: 'Build'
       displayName: 'Build'
-      FLYWAY_CHECK_DRIFT_ON_MIGRATE: "true" # Set this value to true to enable drift checks during each MIGRATE step (More details found here - https://flyway.red-gate.com/pipelines/sample)
       publishArtifacts: 'true'
  
     # Steps represent a sequence of tasks that will be executed as part of the job
