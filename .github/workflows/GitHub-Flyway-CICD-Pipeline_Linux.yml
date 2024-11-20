@@ -57,7 +57,7 @@ env:
    # For added security, ensure sensitive information, like the ones below are set as secrets - Create this within the Projects Settings > Secrets > Actions section
   PROD_REPORT_DATABASE_USERNAME: "MyUsername" # Example secret variable convention: ${{ secrets.PROD_REPORT_DATABASE_USERNAME }}
   PROD_REPORT_DATABASE_PASSWORD: "MyPassword" # Example secret variable convention: ${{ secrets.PROD_REPORT_DATABASE_PASSWORD }}
-  PROD_generateReport: "false" # Turn to false to skip the CHECK report stage tasks 
+  PROD_generateReport: "true" # Turn to false to skip the CHECK report stage tasks 
   ### End of Prod Stage Variables ###
 
   # Repository Secret - Create this within the Projects Settings > Secrets > Actions section
