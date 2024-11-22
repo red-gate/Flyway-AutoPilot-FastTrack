@@ -12,17 +12,21 @@ displayName = "Shadow database"
 provisioner = "clean"
 
 [environments.Prod]
-url = "jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
-displayName = "Production"
+url = "jdbc:sqlserver://localhost;databaseName=AutoPilotProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+displayName = "Production Database"
 
 [environments.Test]
-url = "jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutoPilotTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+displayName = "Test database"
 
 [environments.Check]
-url = "jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotCheck;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutoPilotCheck;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+displayName = "Check (Reporting) database"
+provisioner = "clean"
 
 [environments.Build]
-url = "jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotBuild;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutoPilotBuild;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+displayName = "Build database"
 
 [flyway]
 locations = [ "filesystem:migrations" ]
