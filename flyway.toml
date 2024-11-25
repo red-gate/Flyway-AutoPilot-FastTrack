@@ -3,11 +3,12 @@ name = "AutoPilot - FastTrack"
 databaseType = "SqlServer"
 
 [environments.development]
-url = "jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotDev;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutoPilotDev;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+schemas = [ ]
 displayName = "Development database"
 
 [environments.shadow]
-url = "jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotShadow;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutoPilotShadow;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 displayName = "Shadow database"
 provisioner = "clean"
 
@@ -38,16 +39,16 @@ baselineOnMigrate = true
 baselineVersion = "001"
 errorOverrides = ["S0001:0:I-"]
 
-[flyway.plugins.clean]
-mode = "all"
-
 [flywayDesktop]
 developmentEnvironment = "development"
 shadowEnvironment = "shadow"
 schemaModel = "./schema-model"
 
-  [flywayDesktop.generate]
-  undoScripts = true
+[flywayDesktop.generate]
+undoScripts = true
+  
+[flyway.plugins.clean]
+mode = "all"
 
 [redgateCompare.sqlserver]
 filterFile = "Filter.scpf"
