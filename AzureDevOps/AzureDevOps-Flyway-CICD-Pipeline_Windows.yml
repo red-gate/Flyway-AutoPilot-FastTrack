@@ -156,7 +156,7 @@ stages:
             FLYWAY_CLEAN_DISABLED: false # This should only be disabled for temporary sandbox databases, like Build
         # Step 3 - Migrate all scripts from the migration folder, to verify they can be deployed against an empty database. This is the quickest way to get feedback about problematic scripts
         - script: |
-            flyway info migrate info -environment="${{parameters.buildStage.TARGET_ENVIRONMENT}}" -user="${{parameters.buildStage.TARGET_DATABASE_USERNAME}}" -password="${{parameters.buildStage.TARGET_DATABASE_PASSWORD}}" "-plugins.clean.mode=all" -baselineOnMigrate=true  -configFiles="$(WORKING_DIRECTORY)\flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)\migrations" "-publishResult=$(FLYWAY_PUBLISH_RESULT)" "-flywayServicePublish.publishReport=$(FLYWAY_PUBLISH_RESULT)" "-reportEnabled=$(FLYWAY_PUBLISH_RESULT)"
+            flyway info migrate info -environment="${{parameters.buildStage.TARGET_ENVIRONMENT}}" -user="${{parameters.buildStage.TARGET_DATABASE_USERNAME}}" -password="${{parameters.buildStage.TARGET_DATABASE_PASSWORD}}" -baselineOnMigrate=true  -configFiles="$(WORKING_DIRECTORY)\flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)\migrations" "-publishResult=$(FLYWAY_PUBLISH_RESULT)" "-flywayServicePublish.publishReport=$(FLYWAY_PUBLISH_RESULT)" "-reportEnabled=$(FLYWAY_PUBLISH_RESULT)"
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           condition: and(succeeded(), eq('${{parameters.buildStage.EXECUTE_BUILD}}', true))
