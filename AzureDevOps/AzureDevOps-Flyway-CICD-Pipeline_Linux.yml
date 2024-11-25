@@ -93,7 +93,7 @@ variables:
 
   # Optional - For ephemeral agents/runners, it's necessary to validate Flyway is installed on each run. Set the below to true to enable the functionality
   FLYWAY_CLI_INSTALL_CHECK: "false" # Setting to false will skip the Flyway CLI check step
-  FLYWAY_VERSION: "10.21.0" # This outlines the version of Flyway CLI that will be downloaded if no Flyway CLI is detected on the target agent
+  FLYWAY_VERSION: "Latest" # This outlines the version of Flyway CLI that will be downloaded if no Flyway CLI is detected on the target agent (Examples - '11.0.0' for specific version. Or 'Latest' for latest version)
   FLYWAY_INSTALL_DIRECTORY: "" # The path on the agent machine where Flyway CLI will be installed
 
   # Optional: Side Quest #2 - Using the Flyway Pipeline Integration - https://flyway.red-gate.com/ For More Details
@@ -135,7 +135,7 @@ stages:
             FLYWAY_TOKEN: $(FLYWAY_TOKEN)
         # Step 2 - Ensure the Build Database is cleaned of all objects, meaning the build starts from scratch
         - script: |
-            flyway info clean info -environment="${{parameters.buildStage.TARGET_ENVIRONMENT}}" -user="${{parameters.buildStage.TARGET_DATABASE_USERNAME}}" -password="${{parameters.buildStage.TARGET_DATABASE_PASSWORD}}" "-plugins.clean.mode=all" -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations"
+            flyway info clean info -environment="${{parameters.buildStage.TARGET_ENVIRONMENT}}" -user="${{parameters.buildStage.TARGET_DATABASE_USERNAME}}" -password="${{parameters.buildStage.TARGET_DATABASE_PASSWORD}}" -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations"
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           displayName: 'Clean Build DB'
