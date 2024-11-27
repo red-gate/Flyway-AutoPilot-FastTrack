@@ -20,7 +20,51 @@ if ($null -ne ${env:FLYWAY_INSTALL_DIRECTORY}) {
     Write-Output "Using Local Variables for Flyway CLI Install Directory"
     # Local Variables - If Env Variables Not Set - Flyway Download Location
     $flywayInstallDirectory = 'C:\FlywayCLI\'
-  }
+}
+
+# Flyway PATH Location Check
+if ($null -ne ${env:FLYWAY_PATH_LOCATION}) {
+    # Environment Variables - Use these if set as a variable - PATH Location (User or Machine)
+    # Using Machine will require administrative permissions to the server
+    Write-Output "Using Environment Variables for Flyway CLI PATH Location"
+    $flywayPathLocation = "${env:FLYWAY_PATH_LOCATION}"
+    } else {
+    Write-Output "Using Local Variables for Flyway CLI PATH Location"
+    # Local Variables - If Env Variables Not Set - PATH Location (Defaulting to User)
+    $flywayPathLocation = 'User'
+}
+
+# Fetch the content of the web page
+Write-Output "Analysing https://documentation.red-gate.com/fd/command-line-184127404.html for Latest Version Number"
+# Check if $flywayVersion is 'latest' (case-insensitive)
+if ($flywayVersion -ieq "latest") {
+    # Fetch the content of the web page
+    try {
+        # Define the URL to fetch and fetch page content
+        $url = "https://documentation.red-gate.com/fd/command-line-184127404.html"
+        $response = Invoke-WebRequest -Uri $url -UseBasicParsing
+        $content = $response.Content
+
+        # Define the regex pattern to extract the version number
+        # This looks for 'flyway-commandline-' followed by a version pattern
+        $pattern = 'flyway-commandline-(\d+\.\d+\.\d+)-windows-x64\.zip'
+
+        # Perform the regex match
+        if ($content -match $pattern) {
+            # Extract the version number from the match group
+            $flywayLatestVersion = $matches[1]
+            Write-Output "Flyway Latest Version Number: $flywayLatestVersion"
+            $flywayVersion = $flywayLatestVersion
+        } else {
+            Write-Output "Version string not found in the webpage content."
+        }
+
+    } catch {
+        Write-Error "Failed to retrieve or process the webpage. Error: $_"
+    }
+} else {
+    Write-Output "Flyway Version Number Variable is not 'latest', Current Version to Install: $flywayVersion"
+}
 
 Write-Host "Using Flyway CLI version $flywayVersion"
 
@@ -60,12 +104,13 @@ if (Get-Command flyway -ErrorAction SilentlyContinue) {
     # Extract version information
     $a = & "flyway" --version 2>&1 | Select-String 'Edition'
     $b = $a -split ' '
+    $currentVersion = $b[3]
     
-    if ($b[3] -eq $flywayVersion) {
-        Write-Output "$($b) is already installed."
+    if ($currentVersion -eq $flywayVersion) {
+        Write-Output "$($b) is already installed. Exiting Gracefully."
         Exit
     } else {
-        Write-Host "A different version of Flyway is installed. Updating to version $flywayVersion."
+        Write-Host "Version $currentVersion of Flyway is already installed. Updating to version $flywayVersion."
 
         # Clean up the old Flyway files in the extraction directory
         Remove-Item -Recurse -Force "$ExtractPath*"
@@ -91,12 +136,12 @@ if (Get-Command flyway -ErrorAction SilentlyContinue) {
             Remove-Item $ExtractPath/*.zip -Force -Recurse
         }
 
-        Write-Host "Environtment Variables - Get Updated Values"
+        Write-Host "Environment Variables - Get Updated Values"
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path","User") + ";" + [System.Environment]::GetEnvironmentVariable("Path","Machine")
 
          # Add Flyway to the PATH if not already added (one-time setup)
-        if (-Not $Env:Path.Contains("C:\FlywayCLI")) {
-            [System.Environment]::SetEnvironmentVariable('Path', "C:\FlywayCLI;$([System.Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::User))", [System.EnvironmentVariableTarget]::User)
+        if (-Not $Env:Path.Contains("$flywayInstallDirectory")) {
+            [System.Environment]::SetEnvironmentVariable('Path', "$flywayInstallDirectory;$([System.Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::$flywayPathLocation))", [System.EnvironmentVariableTarget]::$flywayPathLocation)
             Write-Host "Updated Local Path Variable"
             $env:Path = [System.Environment]::GetEnvironmentVariable("Path","User") + ";" + [System.Environment]::GetEnvironmentVariable("Path","Machine")
             Write-Host "Flyway CLI added to Environment Variable PATH."
@@ -131,8 +176,8 @@ if (Get-Command flyway -ErrorAction SilentlyContinue) {
     }
 
     # Add Flyway to the PATH if not already added (one-time setup)
-    if (-Not $Env:Path.Contains("C:\FlywayCLI")) {
-        [System.Environment]::SetEnvironmentVariable('Path', "C:\FlywayCLI;$([System.Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::User))", [System.EnvironmentVariableTarget]::User)
+    if (-Not $Env:Path.Contains("$flywayInstallDirectory")) {
+        [System.Environment]::SetEnvironmentVariable('Path', "$flywayInstallDirectory;$([System.Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::$flywayPathLocation))", [System.EnvironmentVariableTarget]::$flywayPathLocation)
         Write-Host "Updated Local Path Variable"
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path","User") + ";" + [System.Environment]::GetEnvironmentVariable("Path","Machine")
         Write-Host "Flyway CLI added to Environment Variable PATH."
