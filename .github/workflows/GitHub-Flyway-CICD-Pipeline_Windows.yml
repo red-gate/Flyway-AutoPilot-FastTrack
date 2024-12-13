@@ -96,7 +96,7 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
       # Optional - If Enabled, Flyway CLI will be validated and installed if not present
-      - name: Flyway - CLI Install ManualValidation
+      - name: Flyway - CLI Install Manual Validation
         if: env.FLYWAY_CLI_INSTALL_CHECK == 'true'
         run: |
           $scriptPath = "${{ GITHUB.WORKSPACE }}/scripts/Flyway_DownloadAndInstallCLI.ps1"
@@ -182,7 +182,7 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
       # Optional - If Enabled, Flyway CLI will be validated and installed if not present
-      - name: Flyway - CLI Install ManualValidation
+      - name: Flyway - CLI Install Manual Validation
         if: env.FLYWAY_CLI_INSTALL_CHECK == 'true'
         run: |
           $scriptPath = "${{ GITHUB.WORKSPACE }}/scripts/Flyway_DownloadAndInstallCLI.ps1"
@@ -255,7 +255,7 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
       # Optional - If Enabled, Flyway CLI will be validated and installed if not present
-      - name: Flyway - CLI Install ManualValidation
+      - name: Flyway - CLI Install Manual Validation
         if: env.FLYWAY_CLI_INSTALL_CHECK == 'true'
         run: |
           $scriptPath = "${{ GITHUB.WORKSPACE }}/scripts/Flyway_DownloadAndInstallCLI.ps1"
