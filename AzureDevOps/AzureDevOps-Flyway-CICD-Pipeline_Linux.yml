@@ -10,58 +10,38 @@ trigger: none
 #     include:
 #       - migrations/*
 
- # Step 1: Stage Variables - The below parameters will be consumed in the corresponding stage. Therefore, these need to be updated according to your environment details
-parameters:
-  # Build Stage Variables
-  - name: buildStage
-    type: object
-    default: 
-      stage: 'Build'
-      DATABASE_NAME: "AutoPilotBuild"
-      # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
-      TARGET_ENVIRONMENT: "Build" 
-      # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
-      TARGET_DATABASE_USERNAME: "$(TARGET_DATABASE_USERNAME_SECURE)"
-      TARGET_DATABASE_PASSWORD: "$(TARGET_DATABASE_PASSWORD_SECURE)"
-      EXECUTE_BUILD: "true" # Turn to false to skip the build stage tasks
-      #variableGroupName: 'AutoPilot_Build'  # Side Quest 1 - Securing Variables with Library Groups
-  # Test Stage Variables
-  - name: testStage
-    type: object
-    default: 
-      stage: 'Test'
-      DATABASE_NAME: "AutoPilotTest"
-      # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
-      TARGET_ENVIRONMENT: "Test" 
-      # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
-      TARGET_DATABASE_USERNAME: "$(TARGET_DATABASE_USERNAME_SECURE)"
-      TARGET_DATABASE_PASSWORD: "$(TARGET_DATABASE_PASSWORD_SECURE)"
-      REPORT_ENVIRONMENT: "Check"
-       # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
-      REPORT_DATABASE_USERNAME: "$(REPORT_DATABASE_USERNAME_SECURE)"
-      REPORT_DATABASE_PASSWORD: "$(REPORT_DATABASE_PASSWORD_SECURE)"
-      pauseForCodeReview: "false" # Turn to false to skip the build stage tasks
-      generateReport: "true" # Turn to false to skip the CHECK report stage tasks
-      #variableGroupName: 'AutoPilot_Build'  # Side Quest 1 - Securing Variables with Library Groups
-  # Prod Stage Variables
-  - name: prodStage
-    type: object
-    default: 
-      stage: 'Prod'
-      DATABASE_NAME: "AutoPilotProd"
-      # This variable refers to the environment name present in the Flyway Projects TOML file. Use Flyway Desktop to check and change this value if required.
-      TARGET_ENVIRONMENT: "Prod" 
-      # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
-      TARGET_DATABASE_USERNAME: "$(TARGET_DATABASE_USERNAME_SECURE)"
-      TARGET_DATABASE_PASSWORD: "$(TARGET_DATABASE_PASSWORD_SECURE)"
-      REPORT_ENVIRONMENT: "Check"
-       # Optional - If SQL Authentication is used, provide the relevant database username/password. For improved security, ensure secure variables are provided
-      REPORT_DATABASE_USERNAME: "$(REPORT_DATABASE_USERNAME_SECURE)"
-      REPORT_DATABASE_PASSWORD: "$(REPORT_DATABASE_PASSWORD_SECURE)"
-      pauseForCodeReview: "true" # Turn to false to skip the build stage tasks
-      generateReport: "true" # Turn to false to skip the CHECK report stage tasks
-      #variableGroupName: 'AutoPilot_Build'  # Side Quest 1 - Securing Variables with Library Groups
-                                                                                                                                                                      
+ # Step 1: Stage Variables - So that all variables are kept secure, it's recommended that Library Variable Groups are used.
+### Build Stage Variables - Create 'AutoPilotBuild' Variable Group ###
+### To Create a Libary Variable Group, Click Pipelines > Library > + Variable Group ###
+# "TARGET_DATABASE_URL" - Leave URL blank, by default, the database URL will be taken from the Flyway Project TOML file
+# Example Value - jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotDev;encrypt=true;integratedSecurity=true;trustServerCertificate=true
+# "TARGET_DATABASE_USERNAME"- Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# "TARGET_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+### End of Build Stage Variable Group ###
+
+### Test Stage Variables - Create 'AutoPilotTest' Variable Group ###
+### To Create a Libary Variable Group, Click Pipelines > Library > + Variable Group ###
+# "TARGET_DATABASE_URL" - Leave URL blank, by default, the database URL will be taken from the Flyway Project TOML file
+# Example Value - jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true
+# "TARGET_DATABASE_USERNAME" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# "TARGET_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# "REPORT_DATABASE_URL" - Leave URL blank, by default, the database URL will be taken from the Flyway Project TOML file
+# Example Value - jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotCheck;encrypt=true;integratedSecurity=true;trustServerCertificate=true
+# "REPORT_DATABASE_USERNAME" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# "REPORT_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+### End of Test Stage Variable Group ###
+
+### Prod Stage Variables - Create 'AutoPilotProd' Variable Group ###
+### To Create a Libary Variable Group, Click Pipelines > Library > + Variable Group ###
+# "TARGET_DATABASE_URL" - Leave URL blank, by default, the database URL will be taken from the Flyway Project TOML file
+# Example Value - jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true
+# "TARGET_DATABASE_USERNAME" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# "TARGET_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# "REPORT_DATABASE_URL" - Leave URL blank, by default, the database URL will be taken from the Flyway Project TOML file
+# Example Value - jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotCheck;encrypt=true;integratedSecurity=true;trustServerCertificate=true
+# "REPORT_DATABASE_USERNAME" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# "REPORT_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+### End of Prod Stage Variable Group ###                                                                                                                                          
 pool:
   name: "Default" # To be set when a self-hosted agent pool is to be used alongside this pipeline
   #vmImage: "" # To be used when a microsoft-hosted agent is used alongside this pipeline (Such as ubuntu-latest/windows-latest)
@@ -74,19 +54,15 @@ variables:
   WORKING_DIRECTORY: $(System.DefaultWorkingDirectory)
   system.debug: 'false' # Set this to true to enable verbose logging on your pipeline run
   
-  # Side Quest #1 - Securing Variables with Library Groups - Create a Library Variable Group to house secure pipeline variables (Click Pipelines --> Library --> + Variable Group)
-  # group: "AutoPilot_Global" # FLYWAY_EMAIL/FLYWAY_TOKEN/FLYWAY_LICENSE_KEY (Personal Access Keys are the recommended license authentication method - https://documentation.red-gate.com/fd/tutorial-personal-access-tokens-243271547.html)
-  
-  # License Authentication - Place value in above Library Group for security, or plaintext below for simplicity #
-
-  # Step 3: Personal Access Tokens (PATs) are the recommended method of authorizing Flyway during a non-interactive session
+  # Step 2 - Securely authenticating Flyway with PATs #
+  ### To Create a Libary Variable Group, Click Pipelines > Library > + Variable Group ###
+  group: "AutoPilotGlobal" # FLYWAY_EMAIL/FLYWAY_TOKEN (See below for examples)
+  # Personal Access Tokens (PATs) are the recommended method of authorizing Flyway during a non-interactive session
   # Details on how to do this can be found here: https://documentation.red-gate.com/flyway/flyway-cli-and-api/tutorials/tutorial-personal-access-tokens
   # Documentation on all available Authentication methods can be found here: https://documentation.red-gate.com/fd/flyway-licensing-263061944.html
-  FLYWAY_EMAIL: "$(FLYWAY_EMAIL_SECURE)" # Enter the email address linked to the Redgate Account that created the PAT
-  # PAT's should always be treated as secure. Therefore, we recommend creating a secure variable called FLYWAY_TOKEN_SECURE. To use a secret in ADO, this needs to be mapped as an environment variable for each section
-  FLYWAY_TOKEN: "$(FLYWAY_TOKEN_SECURE)" # Enter the PAT Value (This should be treated like a password and thus as a secure variable. Consider using a Library Group or Secure Variable for this value)
-
-  #FLYWAY_LICENSE_KEY: "" # Deprecated Authentication Method. Consider using the new PAT method for added security.
+  # "FLYWAY_EMAIL" - Enter the email address linked to the Redgate Account that created the PAT
+  # "FLYWAY_TOKEN" - Enter the PAT Value (This should be treated like a password and thus as a secure variable. Consider using a Library Group or Secure Variable for this value)
+  ### End of AutoPilotGlobal Variable Group Creation ###
 
   BASELINE_VERSION: "001" # This should match the version number of your baseline script
   FIRST_UNDO_SCRIPT: "002" # This should match the first undo version in your project
@@ -106,13 +82,17 @@ stages:
     jobs:
     - job: Build
       variables: # Tip - For sensitive variables, store these in a Library Variable Group and reference the name below (Click Pipelines --> Library --> + Variable Group)
-      # Side Quest 1 - Securing Variables with Library Groups - FLYWAY_EMAIL/FLYWAY_TOKEN/FLYWAY_LICENSE_KEY (Use either PAT or License Key method for License Authentication)
-      #- group: "AutoPilot_Global"
-      # Side Quest 1 - Securing Variables with Library Groups - DATABASE_NAME/TARGET_ENVIRONMENT/TARGET_DATABASE_USER/TARGET_DATABASE_PASSWORD/EXECUTE_BUILD
-      #- group: "${{parameters.buildStage.variableGroupName}}"
+      - group: "AutoPilotGlobal"
+      - group: "AutoPilotBuild" # Expected Variables - TARGET_DATABASE_URL/TARGET_DATABASE_USER/TARGET_DATABASE_PASSWORD
       # Example Variable syntax if required. Sensitive values should ALWAYS be kept secure in either Variable Groups (See above) or Secure Variables (Click 'Variables' in top right corner of pipeline editor)
-      - name: Example
-        value: "MyExampleValue"
+      - name: DATABASE_NAME
+        value: "AutoPilotBuild"
+      - name: Environment
+        value: "Build" # This variable refers to the environment name present in the Flyway Projects TOML file.
+      - name: EXECUTE_BUILD
+        value: "True" # Turn to false to skip the build stage tasks
+      - name: publishArtifacts
+        value: "true" # Turn to false to skip the artifact upload
 
       steps:
 
@@ -187,14 +167,19 @@ stages:
     displayName: Test Stage
     dependsOn: Build
     variables: # Tip - For sensitive variables, store these in a Library Variable Group and reference the name below (Click Pipelines --> Library --> + Variable Group)
-        # Side Quest 2 - Securing Variables with Library Groups - FLYWAY_EMAIL/FLYWAY_TOKEN/FLYWAY_LICENSE_KEY (Use either PAT or License Key method for License Authentication)
-        #- group: "AutoPilot_Global"
-        # Side Quest 2 - Securing Variables with Library Groups - DATABASE_NAME/TARGET_ENVIRONMENT/TARGET_DATABASE_USER/TARGET_DATABASE_PASSWORD/EXECUTE_BUILD
-        #- group: "AutoPilot_Test"
-        # Example Variable syntax if required. Sensitive values should ALWAYS be kept secure in either Variable Groups (See above) or Secure Variables (Click 'Variables' in top right corner of pipeline editor)
+      - group: "AutoPilotGlobal" # Expected Variables - FLYWAY_EMAIL/FLYWAY_TOKEN
+      - group: "AutoPilotTest" # Expected Variables - TARGET_DATABASE_URL/TARGET_DATABASE_USER/TARGET_DATABASE_PASSWORD/REPORT_DATABASE_URL/REPORT_DATABASE_USER/REPORT_DATABASE_PASSWORD
+      # Example Variable syntax if required. Sensitive values should ALWAYS be kept secure
+      - name: DATABASE_NAME
+        value: "AutoPilotTest"
+      - name: ENVIRONMENT # This variable refers to the environment name present in the Flyway Projects TOML file.
+        value: "Test"
+      - name: REPORT_ENVIRONMENT # This variable refers to the environment name present in the Flyway Projects TOML file.
+        value: "Check"
+      - name: generateReport
+        value: "true" # Turn to false to skip the CHECK report stage tasks
       - name: FLYWAY_CHECK_DRIFT_ON_MIGRATE
-        value: "$(FLYWAY_DRIFT_ON_MIGRATE)" # Setting this variable to true will enable the Flyway Pipelines drift detection so you can track your drift centrally!
-
+        value: "$(FLYWAY_DRIFT_ON_MIGRATE)" # Setting this variable to true will enable the Flyway Pipelines drift detection
     jobs:
     - job: ChangeReport
       displayName: "Flyway - Pre Release Change Report"
@@ -302,13 +287,19 @@ stages:
     displayName: Prod Stage
     dependsOn: Test
     variables: # Tip - For sensitive variables, store these in a Library Variable Group and reference the name below (Click Pipelines --> Library --> + Variable Group)
-        # Side Quest 2 - Securing Variables with Library Groups - FLYWAY_EMAIL/FLYWAY_TOKEN/FLYWAY_LICENSE_KEY (Use either PAT or License Key method for License Authentication)
-        #- group: "AutoPilot_Global"
-        # Side Quest 2 - Securing Variables with Library Groups - DATABASE_NAME/TARGET_ENVIRONMENT/TARGET_DATABASE_USER/TARGET_DATABASE_PASSWORD/EXECUTE_BUILD
-        #- group: "AutoPilot_Prod"
-        # Example Variable syntax if required. Sensitive values should ALWAYS be kept secure in either Variable Groups (See above) or Secure Variables (Click 'Variables' in top right corner of pipeline editor)
+      - group: "AutoPilotGlobal" # Expected Variables - FLYWAY_EMAIL/FLYWAY_TOKEN
+      - group: "AutoPilotProd" # Expected Variables - TARGET_DATABASE_URL/TARGET_DATABASE_USER/TARGET_DATABASE_PASSWORD/REPORT_DATABASE_URL/REPORT_DATABASE_USER/REPORT_DATABASE_PASSWORD
+      # Example Variable syntax if required. Sensitive values should ALWAYS be kept secure
+      - name: DATABASE_NAME
+        value: "AutoPilotProd"
+      - name: ENVIRONMENT # This variable refers to the environment name present in the Flyway Projects TOML file.
+        value: "Prod"
+      - name: REPORT_ENVIRONMENT # This variable refers to the environment name present in the Flyway Projects TOML file.
+        value: "Check"
+      - name: generateReport
+        value: "true" # Turn to false to skip the CHECK report stage tasks
       - name: FLYWAY_CHECK_DRIFT_ON_MIGRATE
-        value: "$(FLYWAY_DRIFT_ON_MIGRATE)" # Setting this variable to true will enable the Flyway Pipelines drift detection so you can track your drift centrally!
+        value: "$(FLYWAY_DRIFT_ON_MIGRATE)" # Setting this variable to true will enable the Flyway Pipelines drift detection
 
     jobs:
     - job: ChangeReport
