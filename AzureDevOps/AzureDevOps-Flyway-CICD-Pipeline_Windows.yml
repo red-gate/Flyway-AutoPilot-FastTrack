@@ -3,91 +3,98 @@
 name: Flyway-AutoPilot-Simple-Pipeline-Windows
 
 trigger: none
-# Uncomment to enable triggers on specific branches or paths:
-# branches:
-#   include:
-#     - release
-# paths:
-#   include:
-#     - migrations/*
+#   branches:
+#     include:
+#       - release
+#   paths:
+#     include:
+#       - migrations/*
 
-### Step 1: Define Stage Variables ###
-### Build Stage Variables - Create a group named 'AutoPilotBuild' ###
+# Step 1: Stage Variables - So that all variables are kept secure, it's recommended that Library Variable Groups are used.
+### Build Stage Variables - Create 'AutoPilotBuild' Variable Group ###
 ### To Create a Libary Variable Group, Click Pipelines > Library > + Variable Group ###
-# TARGET_DATABASE_URL - Leave blank to use the database URL from the Flyway Project TOML file.
-# Example: jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotDev;encrypt=true;integratedSecurity=true;trustServerCertificate=true
-# TARGET_DATABASE_USERNAME: Leave blank if using integratedSecurity (default).
-# TARGET_DATABASE_PASSWORD: Leave blank if using integratedSecurity (default).
+# "TARGET_DATABASE_URL" - Leave URL blank, by default, the database URL will be taken from the Flyway Project TOML file
+# Example Value - jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotDev;encrypt=true;integratedSecurity=true;trustServerCertificate=true
+# "TARGET_DATABASE_USERNAME"- Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# "TARGET_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
 ### End of Build Stage Variable Group ###
 
-### Test Stage Variables - Create a group named 'AutoPilotTest' ###
+### Test Stage Variables - Create 'AutoPilotTest' Variable Group ###
 ### To Create a Libary Variable Group, Click Pipelines > Library > + Variable Group ###
-# TARGET_DATABASE_URL: Leave blank to use the Flyway Project TOML file.
-# Example: jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true
-# TARGET_DATABASE_USERNAME: Leave blank if using integratedSecurity (default).
-# TARGET_DATABASE_PASSWORD: Leave blank if using integratedSecurity (default).
-# REPORT_DATABASE_URL: Same default behavior as TARGET_DATABASE_URL.
-# REPORT_DATABASE_USERNAME: Leave blank if using integratedSecurity (default).
-# REPORT_DATABASE_PASSWORD: Leave blank if using integratedSecurity (default).
+# "TARGET_DATABASE_URL" - Leave URL blank, by default, the database URL will be taken from the Flyway Project TOML file
+# Example Value - jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true
+# "TARGET_DATABASE_USERNAME" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# "TARGET_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# "REPORT_DATABASE_URL" - Leave URL blank, by default, the database URL will be taken from the Flyway Project TOML file
+# Example Value - jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotCheck;encrypt=true;integratedSecurity=true;trustServerCertificate=true
+# "REPORT_DATABASE_USERNAME" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# "REPORT_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
 ### End of Test Stage Variable Group ###
 
-### Prod Stage Variables - Create a group named'AutoPilotProd' ###
+### Prod Stage Variables - Create 'AutoPilotProd' Variable Group ###
 ### To Create a Libary Variable Group, Click Pipelines > Library > + Variable Group ###
-# TARGET_DATABASE_URL: Leave blank to use the Flyway Project TOML file.
-# Example: jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true
-# TARGET_DATABASE_USERNAME: Leave blank if using integratedSecurity (default).
-# TARGET_DATABASE_PASSWORD: Leave blank if using integratedSecurity (default).
-# REPORT_DATABASE_URL: Same default behavior as TARGET_DATABASE_URL.
-# REPORT_DATABASE_USERNAME: Leave blank if using integratedSecurity (default).
-# REPORT_DATABASE_PASSWORD: Leave blank if using integratedSecurity (default).
+# "TARGET_DATABASE_URL" - Leave URL blank, by default, the database URL will be taken from the Flyway Project TOML file
+# Example Value - jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true
+# "TARGET_DATABASE_USERNAME" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# "TARGET_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# "REPORT_DATABASE_URL" - Leave URL blank, by default, the database URL will be taken from the Flyway Project TOML file
+# Example Value - jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotCheck;encrypt=true;integratedSecurity=true;trustServerCertificate=true
+# "REPORT_DATABASE_USERNAME" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# "REPORT_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
 ### End of Prod Stage Variable Group ###
 
 pool:
-  # Step 2 - Set the agent pool #
-  name: "$(AGENT_POOL)" # For use with the default Self-Hosted agent setup
-  #vmImage: "$(AGENT_POOL)" # Uncomment for Microsoft-hosted agents (e.g., ubuntu-latest or windows-latest)
+  # Step 2 - Set which Agent Pool is to be used #
+  name: "$(AGENT_POOL)" # To be set when a self-hosted agent pool is to be used alongside this pipeline
+  #vmImage: "windows-latest" # To be used when a microsoft-hosted agent is used alongside this pipeline (Such as ubuntu-latest/windows-latest)
 
 variables:
 
-  # Path to the migrations folder in your project (default is the same directory as this YAML file)
+  # This is the relative path to the migrations folder in your project, such as:
+  # $(System.DefaultWorkingDirectory)\project
+  # The default is to have the migrations folder in the same directory as the yml file
   WORKING_DIRECTORY: $(System.DefaultWorkingDirectory)
-  system.debug: 'false' # Set to true for verbose logging during pipeline runs
+  system.debug: 'false' # Set this to true to enable verbose logging on your pipeline run
   
-  # Step 3: Authenticate Flyway with Personal Access Tokens (PATs)
-  # To create a Library Variable Group: Go to Pipelines > Library > + Variable Group
-  group: "AutoPilotGlobal" # Includes variables FLYWAY_EMAIL, FLYWAY_TOKEN, AGENT_POOL
-  # FLYWAY_EMAIL: Email linked to the Redgate account that created the PAT.
-  # FLYWAY_TOKEN: PAT value (treat like a password; use secure variables or a Library Group).
-  # AGENT_POOL: The name of the agent pool to be used throughout the pipeline
+  # Step 2 - Securely authenticating Flyway with PATs #
+  ### To Create a Libary Variable Group, Click Pipelines > Library > + Variable Group ###
+  group: "AutoPilotGlobal" # FLYWAY_EMAIL/FLYWAY_TOKEN/AGENT_POOL (See below for examples)
+  # Personal Access Tokens (PATs) are the recommended method of authorizing Flyway during a non-interactive session
+  # Details on how to do this can be found here: https://documentation.red-gate.com/flyway/flyway-cli-and-api/tutorials/tutorial-personal-access-tokens
+  # Documentation on all available Authentication methods can be found here: https://documentation.red-gate.com/fd/flyway-licensing-263061944.html
+  # "FLYWAY_EMAIL" - Enter the email address linked to the Redgate Account that created the PAT
+  # "FLYWAY_TOKEN" - Enter the PAT Value (This should be treated like a password and thus as a secure variable. Consider using a Library Group or Secure Variable for this value)
+  ### End of AutoPilotGlobal Variable Group Creation ###
 
   BASELINE_VERSION: "001" # This should match the version number of your baseline script
   FIRST_UNDO_SCRIPT: "002" # This should match the first undo version in your project
 
-  # Optional: Validate Flyway CLI installation for ephemeral agents.
-  FLYWAY_CLI_INSTALL_CHECK: "false" # Set to true to enable Flyway CLI installation check.
-  FLYWAY_VERSION: "Latest" # Use 'Latest' or a specific version like '11.0.0'.
-  FLYWAY_INSTALL_DIRECTORY: "C:\\FlywayCLI\\" # Path to install Flyway CLI on the agent machine.
+  # Optional - For ephemeral agents/runners, it's necessary to validate Flyway is installed on each run. Set the below to true to enable the functionality
+  FLYWAY_CLI_INSTALL_CHECK: "false" # Setting to false will skip the Flyway CLI check step
+  FLYWAY_VERSION: "Latest" # This outlines the version of Flyway CLI that will be downloaded if no Flyway CLI is detected on the target agent (Examples - '11.0.0' for specific version. Or 'Latest' for latest version)
+  FLYWAY_INSTALL_DIRECTORY: "C:\\FlywayCLI\\" # The path on the agent machine where Flyway CLI will be installed
 
-  # Optional: Side Quest #1 - Enable Flyway Pipeline Integration for tracking releases and drift. - https://flyway.red-gate.com/
+  # Optional: Side Quest #2 - Using the Flyway Pipeline Integration - https://flyway.red-gate.com/ For More Details
   FLYWAY_PUBLISH_RESULT: "true" # Set this value to true to enable Flyway Pipelines and track your releases centrally!
   FLYWAY_DRIFT_ON_MIGRATE: "true" # Set this value to true to enable Flyway Pipelines drift detection and track your drift centrally!
 
 ### End of Pipeline Variables - No further changes required below this line for default workflow ###
 
 stages:
-  - stage: Build
+  - stage: Build # Tip - The build stage is a great way of gaining quick early feedback about upcoming releases. It simply needs to point to an empty database to function.
     displayName: Build Stage 
-    # Use a custom Agent Pool if needed for this stage:
-    # pool: ""
     jobs:
     - job: Build
-      variables:
+      variables: # Tip - For sensitive variables, store these in a Library Variable Group and reference the name below (Click Pipelines --> Library --> + Variable Group)
       - group: "AutoPilotGlobal" # Expected Variables - FLYWAY_EMAIL/FLYWAY_TOKEN/AGENT_POOL
       - group: "AutoPilotBuild" # Expected Variables - TARGET_DATABASE_URL/TARGET_DATABASE_USER/TARGET_DATABASE_PASSWORD
+      # Example Variable syntax if required. Sensitive values should ALWAYS be kept secure in either Variable Groups (See above) or Secure Variables (Click 'Variables' in top right corner of pipeline editor)
       - name: DATABASE_NAME
         value: "AutoPilotBuild"
       - name: Environment
         value: "Build" # This variable refers to the environment name present in the Flyway Projects TOML file.
+      - name: CUSTOM_PARAMS
+        value: "$(CUSTOM_PARAMS)" # Secure method of adding custom Flyway Parameters (Example -X for debug)
       - name: EXECUTE_BUILD
         value: "true" # Turn to false to skip the build stage tasks
       - name: publishArtifacts
@@ -124,35 +131,31 @@ stages:
             FLYWAY_TOKEN: $(FLYWAY_TOKEN)
         # Step 2 - Ensure the Build Database is cleaned of all objects, meaning the build starts from scratch
         - script: |
-            flyway info clean info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -configFiles="$(WORKING_DIRECTORY)\flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)\migrations"
+            flyway info clean info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -configFiles="$(WORKING_DIRECTORY)\flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)\migrations" $(CUSTOM_PARAMS)
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           displayName: 'Clean Build DB'
           condition: and(succeeded(), eq(variables['EXECUTE_BUILD'], true))
           env:
             FLYWAY_CLEAN_DISABLED: false # This should only be disabled for temporary sandbox databases, like Build
-            ${{ if ne(variables['TARGET_DATABASE_URL'], '') }}: 
-              FLYWAY_URL: $(TARGET_DATABASE_URL) # Optionally passes the Flyway URL if present in the Library Group
         # Step 3 - Migrate all scripts from the migration folder, to verify they can be deployed against an empty database. This is the quickest way to get feedback about problematic scripts
         - script: |
-            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -baselineOnMigrate=true -configFiles="$(WORKING_DIRECTORY)\flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)\migrations" "-publishResult=$(FLYWAY_PUBLISH_RESULT)" "-flywayServicePublish.publishReport=$(FLYWAY_PUBLISH_RESULT)" "-reportEnabled=$(FLYWAY_PUBLISH_RESULT)
+            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -baselineOnMigrate=true -configFiles="$(WORKING_DIRECTORY)\flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)\migrations" "-publishResult=$(FLYWAY_PUBLISH_RESULT)" "-flywayServicePublish.publishReport=$(FLYWAY_PUBLISH_RESULT)" "-reportEnabled=$(FLYWAY_PUBLISH_RESULT)" $(CUSTOM_PARAMS)
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           condition: and(succeeded(), eq(variables['EXECUTE_BUILD'], true))
           displayName: 'Validate Migrate Scripts'
           env:
-            ${{ if ne(variables['TARGET_DATABASE_URL'], '') }}: 
-              FLYWAY_URL: $(TARGET_DATABASE_URL) # Optionally passes the Flyway URL if present in the Library Group
+            EXAMPLE_VAR: ""
         # Step 4 (Optional) - Undo all relevant migrations using corresponding rollback script, to validate they can be run. This helps to reduce the chance the script will fail during a real life rollback scenario 
         - script: |
-            flyway info undo info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -configFiles="$(WORKING_DIRECTORY)\flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)\migrations" -target="$(FIRST_UNDO_SCRIPT)"
+            flyway info undo info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -configFiles="$(WORKING_DIRECTORY)\flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)\migrations" -target="$(FIRST_UNDO_SCRIPT)" $(CUSTOM_PARAMS)
           continueOnError: true
           workingDirectory: '$(WORKING_DIRECTORY)'
           condition: and(succeeded(), eq(variables['EXECUTE_BUILD'], true))
           displayName: 'Validate Undo Scripts'
           env:
-            ${{ if ne(variables['TARGET_DATABASE_URL'], '') }}: 
-              FLYWAY_URL: $(TARGET_DATABASE_URL) # Optionally passes the Flyway URL if present in the Library Group
+            EXAMPLE_VAR: ""
         # ADO - Copy in-scope build files to artifact directory 
         - task: CopyFiles@2
           condition: succeeded()
@@ -179,21 +182,23 @@ stages:
   - stage: Test
     displayName: Test Stage
     dependsOn: Build
-    # Use a custom Agent Pool if needed for this stage:
-    # pool: ""
-    variables: 
+    #pool: "" # By default the global Agent Pool will be used for all stages. Each stage could instead be given a custom Agent Pool here if required, typically for security reasons.
+    variables: # Tip - For sensitive variables, store these in a Library Variable Group and reference the name below (Click Pipelines --> Library --> + Variable Group)
       - group: "AutoPilotGlobal" # Expected Variables - FLYWAY_EMAIL/FLYWAY_TOKEN/AGENT_POOL
       - group: "AutoPilotTest" # Expected Variables - TARGET_DATABASE_URL/TARGET_DATABASE_USER/TARGET_DATABASE_PASSWORD/REPORT_DATABASE_URL/REPORT_DATABASE_USER/REPORT_DATABASE_PASSWORD
+      # Example Variable syntax if required. Sensitive values should ALWAYS be kept secure
       - name: DATABASE_NAME
         value: "AutoPilotTest"
-      - name: ENVIRONMENT
-        value: "Test" # Refers to the environment in the Flyway Project TOML file.
-      - name: REPORT_ENVIRONMENT
-        value: "Check" # Refers to the report environment in the Flyway Project TOML file.
+      - name: ENVIRONMENT # This variable refers to the environment name present in the Flyway Projects TOML file.
+        value: "Test"
+      - name: REPORT_ENVIRONMENT # This variable refers to the environment name present in the Flyway Projects TOML file.
+        value: "Check"
+      - name: CUSTOM_PARAMS
+        value: "$(CUSTOM_PARAMS)" # Secure method of adding custom Flyway Parameters (Example -X for debug)
       - name: generateReport
-        value: "true" # Set to false to skip the report generation step
+        value: "true" # Turn to false to skip the CHECK report stage tasks
       - name: FLYWAY_CHECK_DRIFT_ON_MIGRATE
-        value: "$(FLYWAY_DRIFT_ON_MIGRATE)" # Set to true to enable the Flyway Pipelines Drift Detection functionality
+        value: "$(FLYWAY_DRIFT_ON_MIGRATE)" # Setting this variable to true will enable the Flyway Pipelines drift detection
     jobs:
     - job: ChangeReport
       displayName: "Flyway - Pre Release Change Report"
@@ -239,16 +244,11 @@ stages:
             FLYWAY_TOKEN: $(FLYWAY_TOKEN)
         # Step 2 - Create Check Report
         - script: |
-              flyway check -dryrun -changes -drift info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -check.buildEnvironment="$(REPORT_ENVIRONMENT)" -environments.$(REPORT_ENVIRONMENT).user="$(REPORT_DATABASE_USERNAME)" -environments.$(REPORT_ENVIRONMENT).password="$(REPORT_DATABASE_PASSWORD)" -configFiles="$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\migrations" "-reportFilename=$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\reports\$(DATABASE_NAME)-Run-$(Build.BuildId)-Check-Report.html" "-publishResult=$(FLYWAY_PUBLISH_RESULT)" "-flywayServicePublish.publishReport=$(FLYWAY_PUBLISH_RESULT)" "-reportEnabled=$(FLYWAY_PUBLISH_RESULT)"
+              flyway check -dryrun -changes -drift info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -check.buildEnvironment="$(REPORT_ENVIRONMENT)" -environments.$(REPORT_ENVIRONMENT).user="$(REPORT_DATABASE_USERNAME)" -environments.$(REPORT_ENVIRONMENT).password="$(REPORT_DATABASE_PASSWORD)" -configFiles="$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\migrations" "-reportFilename=$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\reports\$(DATABASE_NAME)-Run-$(Build.BuildId)-Check-Report.html" "-publishResult=$(FLYWAY_PUBLISH_RESULT)" "-flywayServicePublish.publishReport=$(FLYWAY_PUBLISH_RESULT)" "-reportEnabled=$(FLYWAY_PUBLISH_RESULT)" $(CUSTOM_PARAMS)
           workingDirectory: '$(WORKING_DIRECTORY)'
           condition: and(succeeded(), eq(variables['generateReport'], true))
           continueOnError: false
           displayName: 'Flyway Check Report'
-          env:
-            ${{ if ne(variables['TARGET_DATABASE_URL'], '') }}: 
-              FLYWAY_URL: $(TARGET_DATABASE_URL) # Optionally passes the Flyway Target URL if present in the Library Group
-            ${{ if ne(variables['REPORT_DATABASE_URL'], '') }}: 
-              ENVIRONMENTS_CHECK_URL: $(REPORT_DATABASE_URL) # Optionally passes the Flyway Report URL if present in the Library Group
         # Step 3 - Publish Check Report
         - task: PublishBuildArtifacts@1
           displayName: 'Publish Check Report'
@@ -317,40 +317,40 @@ stages:
             FLYWAY_TOKEN: $(FLYWAY_TOKEN)
         # Step 2 - Flyway - Deploy Pending migrations to target environment
         - script: |
-            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -configFiles="$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\migrations" "-publishResult=$(FLYWAY_PUBLISH_RESULT)" "-flywayServicePublish.publishReport=$(FLYWAY_PUBLISH_RESULT)" "-reportEnabled=$(FLYWAY_PUBLISH_RESULT)"
+            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -configFiles="$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\migrations" "-publishResult=$(FLYWAY_PUBLISH_RESULT)" "-flywayServicePublish.publishReport=$(FLYWAY_PUBLISH_RESULT)" "-reportEnabled=$(FLYWAY_PUBLISH_RESULT)" $(CUSTOM_PARAMS)
           condition: succeeded()
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           displayName: 'Migrate Test DB'
-          env:
-            ${{ if ne(variables['TARGET_DATABASE_URL'], '') }}: 
-              FLYWAY_URL: $(TARGET_DATABASE_URL) # Optionally passes the Flyway URL if present in the Library Group
   
   - stage: Prod
     displayName: Prod Stage
     dependsOn: Test
-    # Use a custom Agent Pool if needed for this stage:
-    # pool: ""
-    variables:
+    #pool: "" # By default the global Agent Pool will be used for all stages. Each stage could instead be given a custom Agent Pool here if required, typically for security reasons.
+    variables: # Tip - For sensitive variables, store these in a Library Variable Group and reference the name below (Click Pipelines --> Library --> + Variable Group)
       - group: "AutoPilotGlobal" # Expected Variables - FLYWAY_EMAIL/FLYWAY_TOKEN/AGENT_POOL
       - group: "AutoPilotProd" # Expected Variables - TARGET_DATABASE_URL/TARGET_DATABASE_USER/TARGET_DATABASE_PASSWORD/REPORT_DATABASE_URL/REPORT_DATABASE_USER/REPORT_DATABASE_PASSWORD
       # Example Variable syntax if required. Sensitive values should ALWAYS be kept secure
       - name: DATABASE_NAME
         value: "AutoPilotProd"
-      - name: ENVIRONMENT 
-        value: "Prod" # Refers to the environment name in the Flyway Project TOML file.
-      - name: REPORT_ENVIRONMENT
-        value: "Check" # Refers to the report environment name in the Flyway Project TOML file.
+      - name: ENVIRONMENT # This variable refers to the environment name present in the Flyway Projects TOML file.
+        value: "Prod"
+      - name: REPORT_ENVIRONMENT # This variable refers to the environment name present in the Flyway Projects TOML file.
+        value: "Check"
+      - name: CUSTOM_PARAMS
+        value: "$(CUSTOM_PARAMS)" # Secure method of adding custom Flyway Parameters (Example -X for debug)
       - name: generateReport
-        value: "true" # Set to false to skip the report generation creation step
+        value: "true" # Turn to false to skip the CHECK report stage tasks
       - name: FLYWAY_CHECK_DRIFT_ON_MIGRATE
-        value: "$(FLYWAY_DRIFT_ON_MIGRATE)" # Set to true to enable the Flyway Pipelines Drift Detection functionality
+        value: "$(FLYWAY_DRIFT_ON_MIGRATE)" # Setting this variable to true will enable the Flyway Pipelines drift detection
     jobs:
     - job: ChangeReport
       displayName: "Flyway - Pre Release Change Report"
       condition:
       variables:
         EXAMPLE: ""
+      #- group: ${{stage.variableGroupName}}
+      #- group: pipeline_flyway_vars
       steps:
         # Pre-Req - Check if Flyway CLI Installed and Available on Agent
         - task: PowerShell@2
@@ -390,16 +390,11 @@ stages:
             FLYWAY_TOKEN: $(FLYWAY_TOKEN)
         # Step 2 - Create Check Report
         - script: |
-              flyway check -dryrun -changes -drift info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -check.buildEnvironment="$(REPORT_ENVIRONMENT)" -environments.$(REPORT_ENVIRONMENT).user="$(REPORT_DATABASE_USERNAME)" -environments.$(REPORT_ENVIRONMENT).password="$(REPORT_DATABASE_PASSWORD)" -configFiles="$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\migrations" "-reportFilename=$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\reports\$(DATABASE_NAME)-Run-$(Build.BuildId)-Check-Report.html" "-publishResult=$(FLYWAY_PUBLISH_RESULT)" "-flywayServicePublish.publishReport=$(FLYWAY_PUBLISH_RESULT)" "-reportEnabled=$(FLYWAY_PUBLISH_RESULT)"
+              flyway check -dryrun -changes -drift info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -check.buildEnvironment="$(REPORT_ENVIRONMENT)" -environments.$(REPORT_ENVIRONMENT).user="$(REPORT_DATABASE_USERNAME)" -environments.$(REPORT_ENVIRONMENT).password="$(REPORT_DATABASE_PASSWORD)" -configFiles="$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\migrations" "-reportFilename=$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\reports\$(DATABASE_NAME)-Run-$(Build.BuildId)-Check-Report.html" "-publishResult=$(FLYWAY_PUBLISH_RESULT)" "-flywayServicePublish.publishReport=$(FLYWAY_PUBLISH_RESULT)" "-reportEnabled=$(FLYWAY_PUBLISH_RESULT)" $(CUSTOM_PARAMS)
           workingDirectory: '$(WORKING_DIRECTORY)'
           condition: eq(variables['generateReport'], true)
           continueOnError: false
           displayName: 'Flyway Check Report'
-          env:
-            ${{ if ne(variables['TARGET_DATABASE_URL'], '') }}: 
-              FLYWAY_URL: $(TARGET_DATABASE_URL) # Optionally passes the Flyway Target URL if present in the Library Group
-            ${{ if ne(variables['REPORT_DATABASE_URL'], '') }}: 
-              ENVIRONMENTS_CHECK_URL: $(REPORT_DATABASE_URL) # Optionally passes the Flyway Report URL if present in the Library Group
         # Step 3 - Publish Check Report
         - task: PublishBuildArtifacts@1
           displayName: 'Publish Check Report'
@@ -466,11 +461,8 @@ stages:
             FLYWAY_TOKEN: $(FLYWAY_TOKEN)
         # Flyway - Deploy Pending migrations to target environment
         - script: |
-            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -configFiles="$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\migrations" "-publishResult=$(FLYWAY_PUBLISH_RESULT)" "-flywayServicePublish.publishReport=$(FLYWAY_PUBLISH_RESULT)" "-reportEnabled=$(FLYWAY_PUBLISH_RESULT)"
+            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -configFiles="$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)\Flyway-CI-$(Build.BuildId)\migrations" "-publishResult=$(FLYWAY_PUBLISH_RESULT)" "-flywayServicePublish.publishReport=$(FLYWAY_PUBLISH_RESULT)" "-reportEnabled=$(FLYWAY_PUBLISH_RESULT)" $(CUSTOM_PARAMS)
           condition: succeeded()
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           displayName: 'Migrate Prod DB'
-          env:
-            ${{ if ne(variables['TARGET_DATABASE_URL'], '') }}: 
-              FLYWAY_URL: $(TARGET_DATABASE_URL) # Optionally passes the Flyway URL if present in the Library Group

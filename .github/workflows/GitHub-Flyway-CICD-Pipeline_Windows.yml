@@ -80,9 +80,10 @@ jobs:
       TARGET_DATABASE_URL: "${{ secrets.TARGET_DATABASE_URL }}"
       TARGET_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}"
       TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}"
+      CUSTOM_PARAMS: "${{ secrets.CUSTOM_PARMS }}" # Secure method of adding custom Flyway Parameters (Example -X for debug)
       EXECUTE_BUILD: 'true' # Turn to false to skip the build stage tasks
       publishArtifacts: 'true' # Turn to false to skip the artifact upload
-     steps:
+    steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
       # Optional - If Enabled, Flyway CLI will be validated and installed if not present
@@ -109,17 +110,17 @@ jobs:
       - name: Clean Build DB
         if: ${{ env.EXECUTE_BUILD == 'true' && success() }}
         run: |
-          flyway info clean info -environment="${{ env.ENVIRONMENT }}" -url="${{ env.TARGET_DATABASE_URL }}" -user="${{ env.TARGET_DATABASE_USERNAME }}" -password="${{ env.TARGET_DATABASE_PASSWORD }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" -cleanDisabled='false'
+          flyway info clean info -environment="${{ env.ENVIRONMENT }}" -user="${{ env.TARGET_DATABASE_USERNAME }}" -password="${{ env.TARGET_DATABASE_PASSWORD }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" -cleanDisabled='false' ${{ env.CUSTOM_PARAMS }}
       # Step 3 - Migrate all scripts from the migration folder, to verify they can be deployed against an empty database. This is the quickest way to get feedback about problematic scripts
       - name: Migrate Build DB
         if: ${{ env.EXECUTE_BUILD == 'true' && success() }}
         run: |
-          flyway info migrate info -environment="${{ env.ENVIRONMENT }}" -url="${{ env.TARGET_DATABASE_URL }}" -user="${{ env.TARGET_DATABASE_USERNAME }}" -password="${{ env.TARGET_DATABASE_PASSWORD }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" -cleanDisabled='false' -baselineOnMigrate="true" "-publishResult=${{ env.FLYWAY_PUBLISH_RESULT }}" "-flywayServicePublish.publishReport=${{ env.FLYWAY_PUBLISH_RESULT }}" "-reportEnabled=${{ env.FLYWAY_PUBLISH_RESULT }}"
+          flyway info migrate info -environment="${{ env.ENVIRONMENT }}" -user="${{ env.TARGET_DATABASE_USERNAME }}" -password="${{ env.TARGET_DATABASE_PASSWORD }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" -cleanDisabled='false' -baselineOnMigrate="true" "-publishResult=${{ env.FLYWAY_PUBLISH_RESULT }}" "-flywayServicePublish.publishReport=${{ env.FLYWAY_PUBLISH_RESULT }}" "-reportEnabled=${{ env.FLYWAY_PUBLISH_RESULT }}" ${{ env.CUSTOM_PARAMS }}
       # Step 4 (Optional) - Undo all relevant migrations using corresponding rollback script, to validate they can be run. This helps to reduce the chance the script will fail during a real life rollback scenario 
       - name: undo Build DB
         if: ${{ env.EXECUTE_BUILD == 'true' && success() }}
         run: |
-          flyway info undo info -environment="${{ env.ENVIRONMENT }}" -url="${{ env.TARGET_DATABASE_URL }}" -user=${{ env.TARGET_DATABASE_USERNAME }} -password=${{ env.TARGET_DATABASE_PASSWORD }} -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" -baselineOnMigrate="true" -cleanDisabled='false' -target="${{ env.FIRST_UNDO_SCRIPT }}"
+          flyway info undo info -environment="${{ env.ENVIRONMENT }}" -user=${{ env.TARGET_DATABASE_USERNAME }} -password=${{ env.TARGET_DATABASE_PASSWORD }} -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" -baselineOnMigrate="true" -cleanDisabled='false' -target="${{ env.FIRST_UNDO_SCRIPT }}" ${{ env.CUSTOM_PARAMS }}
       # GitHub - After migration scripts are validated, publish them as an artifact
       - name: Publish Validated Migration Scripts as Artifact
         if: ${{ env.publishArtifacts == 'true' && success() }}
@@ -153,8 +154,9 @@ jobs:
       TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}"
       REPORT_ENVIRONMENT: "Check"
       REPORT_DATABASE_URL: "${{ secrets.REPORT_DATABASE_URL }}" 
-      REPORT_DATABASE_USERNAME: "${{ secrets.REPORT_DATABASE_USERNAME }}" 
-      REPORT_DATABASE_PASSWORD: "${{ secrets.REPORT_DATABASE_PASSWORD }}" 
+      REPORT_DATABASE_USERNAME: "${{ secrets.REPORT_DATABASE_USERNAME }}"
+      REPORT_DATABASE_PASSWORD: "${{ secrets.REPORT_DATABASE_PASSWORD }}"
+      CUSTOM_PARAMS: "${{ secrets.CUSTOM_PARMS }}" # Secure method of adding custom Flyway Parameters (Example -X for debug)
       generateReport: 'true' # Turn to false to skip the CHECK report stage tasks
       FLYWAY_CHECK_DRIFT_ON_MIGRATE: 'true' # Turn to false to skip the Drift Report upload to Flyway Pipelines (If enabled)
     steps:
@@ -189,7 +191,7 @@ jobs:
       - name: Create Check Reports
         if: ${{ env.generateReport == 'true' && success() }}
         run: |
-          flyway check -dryrun -changes -drift -environment="${{ env.ENVIRONMENT }}" -url="${{ env.TARGET_DATABASE_URL }}" -user="${{ env.TARGET_DATABASE_USERNAME }}" -password="${{ env.TARGET_DATABASE_PASSWORD }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" "-check.buildEnvironment=${{ env.REPORT_ENVIRONMENT }}" "-environments.${{ env.REPORT_ENVIRONMENT }}.url=${{ env.REPORT_DATABASE_URL }}" "-environments.${{ env.REPORT_ENVIRONMENT }}.user=${{ env.REPORT_DATABASE_USERNAME }}" "-environments.${{ env.REPORT_ENVIRONMENT }}.password=${{ env.REPORT_DATABASE_PASSWORD }}" "-reportFilename=${{ GITHUB.WORKSPACE }}\reports\${{ env.DATABASE_NAME }}-Run-${{ GITHUB.RUN_ID }}-${{ env.ENVIRONMENT }}-Check-Report.html" "-publishResult=${{ env.FLYWAY_PUBLISH_RESULT }}" "-flywayServicePublish.publishReport=${{ env.FLYWAY_PUBLISH_RESULT }}" "-reportEnabled=${{ env.FLYWAY_PUBLISH_RESULT }}"
+          flyway check -dryrun -changes -drift -environment="${{ env.ENVIRONMENT }}" -user="${{ env.TARGET_DATABASE_USERNAME }}" -password="${{ env.TARGET_DATABASE_PASSWORD }}" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" "-check.buildEnvironment=${{ env.REPORT_ENVIRONMENT }}" "-environments.${{ env.REPORT_ENVIRONMENT }}.user=${{ env.REPORT_DATABASE_USERNAME }}" "-environments.${{ env.REPORT_ENVIRONMENT }}.password=${{ env.REPORT_DATABASE_PASSWORD }}" "-reportFilename=${{ GITHUB.WORKSPACE }}\reports\${{ env.DATABASE_NAME }}-Run-${{ GITHUB.RUN_ID }}-${{ env.ENVIRONMENT }}-Check-Report.html" "-publishResult=${{ env.FLYWAY_PUBLISH_RESULT }}" "-flywayServicePublish.publishReport=${{ env.FLYWAY_PUBLISH_RESULT }}" "-reportEnabled=${{ env.FLYWAY_PUBLISH_RESULT }}" ${{ env.CUSTOM_PARAMS }}
         continue-on-error: true
       # Step 3 - Publish Check Report
       - name: Publish Check Report as Artifact
@@ -202,7 +204,7 @@ jobs:
       - name: Migrate Test DB
         if: success()
         run: |
-          flyway info migrate info -environment="${{ env.ENVIRONMENT }}" -url="${{ env.TARGET_DATABASE_URL }}" -user="${{ env.TARGET_DATABASE_USERNAME }}" -password="${{ env.TARGET_DATABASE_PASSWORD }}" -baselineOnMigrate="true" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" "-publishResult=${{ env.FLYWAY_PUBLISH_RESULT }}" "-flywayServicePublish.publishReport=${{ env.FLYWAY_PUBLISH_RESULT }}" "-reportEnabled=${{ env.FLYWAY_PUBLISH_RESULT }}"
+          flyway info migrate info -environment="${{ env.ENVIRONMENT }}" -user="${{ env.TARGET_DATABASE_USERNAME }}" -password="${{ env.TARGET_DATABASE_PASSWORD }}" -baselineOnMigrate="true" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" "-publishResult=${{ env.FLYWAY_PUBLISH_RESULT }}" "-flywayServicePublish.publishReport=${{ env.FLYWAY_PUBLISH_RESULT }}" "-reportEnabled=${{ env.FLYWAY_PUBLISH_RESULT }}" ${{ env.CUSTOM_PARAMS }}
 
   prod:
     name: Deploy Prod
@@ -222,6 +224,7 @@ jobs:
       REPORT_DATABASE_URL: "${{ secrets.REPORT_DATABASE_URL }}" 
       REPORT_DATABASE_USERNAME: "${{ secrets.REPORT_DATABASE_USERNAME }}"
       REPORT_DATABASE_PASSWORD: "${{ secrets.REPORT_DATABASE_PASSWORD }}"
+      CUSTOM_PARAMS: "${{ secrets.CUSTOM_PARMS }}" # Secure method of adding custom Flyway Parameters (Example -X for debug)
       generateReport: 'true' # Turn to false to skip the CHECK report stage tasks
       FLYWAY_CHECK_DRIFT_ON_MIGRATE: 'true' # Turn to false to skip the Drift Report upload to Flyway Pipelines (If enabled)
  
@@ -258,7 +261,7 @@ jobs:
       - name: Create Check Reports
         if: ${{ env.generateReport == 'true' && success() }}
         run: |
-          flyway check -dryrun -changes -drift -environment="${{ env.ENVIRONMENT }}" -url="${{ env.TARGET_DATABASE_URL }}" -user=${{ env.TARGET_DATABASE_USERNAME }} -password=${{ env.TARGET_DATABASE_PASSWORD }} -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" "-check.buildEnvironment=${{ env.REPORT_ENVIRONMENT }}" "-environments.${{ env.REPORT_ENVIRONMENT }}.url=${{ env.REPORT_DATABASE_URL }}" "-environments.${{ env.REPORT_ENVIRONMENT }}.user=${{ env.REPORT_DATABASE_USERNAME }}" "-environments.${{ env.REPORT_ENVIRONMENT }}.password=${{ env.REPORT_DATABASE_PASSWORD }}" "-reportFilename=${{ GITHUB.WORKSPACE }}\reports\${{ env.DATABASE_NAME }}-Run-${{ GITHUB.RUN_ID }}-${{ env.ENVIRONMENT }}-Check-Report.html" "-publishResult=${{ env.FLYWAY_PUBLISH_RESULT }}" "-flywayServicePublish.publishReport=${{ env.FLYWAY_PUBLISH_RESULT }}" "-reportEnabled=${{ env.FLYWAY_PUBLISH_RESULT }}"
+          flyway check -dryrun -changes -drift -environment="${{ env.ENVIRONMENT }}" -user=${{ env.TARGET_DATABASE_USERNAME }} -password=${{ env.TARGET_DATABASE_PASSWORD }} -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" "-check.buildEnvironment=${{ env.REPORT_ENVIRONMENT }}" "-environments.${{ env.REPORT_ENVIRONMENT }}.user=${{ env.REPORT_DATABASE_USERNAME }}" "-environments.${{ env.REPORT_ENVIRONMENT }}.password=${{ env.REPORT_DATABASE_PASSWORD }}" "-reportFilename=${{ GITHUB.WORKSPACE }}\reports\${{ env.DATABASE_NAME }}-Run-${{ GITHUB.RUN_ID }}-${{ env.ENVIRONMENT }}-Check-Report.html" "-publishResult=${{ env.FLYWAY_PUBLISH_RESULT }}" "-flywayServicePublish.publishReport=${{ env.FLYWAY_PUBLISH_RESULT }}" "-reportEnabled=${{ env.FLYWAY_PUBLISH_RESULT }}" ${{ env.CUSTOM_PARAMS }}
         continue-on-error: true
       # Step 3 - Publish Check Report
       - name: Publish Check Report as Artifact
@@ -271,4 +274,4 @@ jobs:
       - name: Migrate Production DB
         if: success()
         run: |
-          flyway info migrate info -environment="${{ env.ENVIRONMENT }}" -url="${{ env.TARGET_DATABASE_URL }}" -user="${{ env.TARGET_DATABASE_USERNAME }}" -password="${{ env.TARGET_DATABASE_PASSWORD }}" -baselineOnMigrate="true" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" "-publishResult=${{ env.FLYWAY_PUBLISH_RESULT }}" "-flywayServicePublish.publishReport=${{ env.FLYWAY_PUBLISH_RESULT }}" "-reportEnabled=${{ env.FLYWAY_PUBLISH_RESULT }}"
+          flyway info migrate info -environment="${{ env.ENVIRONMENT }}" -user="${{ env.TARGET_DATABASE_USERNAME }}" -password="${{ env.TARGET_DATABASE_PASSWORD }}" -baselineOnMigrate="true" -configFiles="${{ GITHUB.WORKSPACE }}\flyway.toml" -locations="filesystem:${{ GITHUB.WORKSPACE }}\migrations" "-publishResult=${{ env.FLYWAY_PUBLISH_RESULT }}" "-flywayServicePublish.publishReport=${{ env.FLYWAY_PUBLISH_RESULT }}" "-reportEnabled=${{ env.FLYWAY_PUBLISH_RESULT }}" ${{ env.CUSTOM_PARAMS }}
