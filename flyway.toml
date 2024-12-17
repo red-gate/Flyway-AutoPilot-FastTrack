@@ -26,7 +26,7 @@ displayName = "Check (Reporting) database"
 provisioner = "clean"
 
 [environments.Build]
-url = "jdbc:sqlserver://localhost;databaseName=AutoPilotBuild;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotBuild;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 displayName = "Build database"
 
 [flyway]
