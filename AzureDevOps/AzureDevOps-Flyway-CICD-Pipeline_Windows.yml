@@ -94,7 +94,7 @@ stages:
       - name: Environment
         value: "Build" # This variable refers to the environment name present in the Flyway Projects TOML file.
       - name: CUSTOM_PARAMETERS
-        value: ${{ coalesce(variables['CUSTOM_PARAMS'], '') }} # Secure method of adding custom Flyway Parameters (Example -X for debug). Default value of '' used if no Custom Params found.'
+        value: $[coalesce(variables['CUSTOM_PARAMS'], '')] # Secure method of adding custom Flyway Parameters (Example -X for debug). Default value of '' used if no Custom Params found.'
       - name: EXECUTE_BUILD
         value: "true" # Turn to false to skip the build stage tasks
       - name: publishArtifacts
@@ -194,7 +194,7 @@ stages:
       - name: REPORT_ENVIRONMENT # This variable refers to the environment name present in the Flyway Projects TOML file.
         value: "Check"
       - name: CUSTOM_PARAMETERS
-        value: ${{ coalesce(variables['CUSTOM_PARAMS'], '') }} # Secure method of adding custom Flyway Parameters (Example -X for debug). Default value of '' used if no Custom Params found.'
+        value: $[coalesce(variables['CUSTOM_PARAMS'], '')] # Secure method of adding custom Flyway Parameters (Example -X for debug). Default value of '' used if no Custom Params found.'
       - name: generateReport
         value: "true" # Turn to false to skip the CHECK report stage tasks
       - name: FLYWAY_CHECK_DRIFT_ON_MIGRATE
@@ -338,7 +338,7 @@ stages:
       - name: REPORT_ENVIRONMENT # This variable refers to the environment name present in the Flyway Projects TOML file.
         value: "Check"
       - name: CUSTOM_PARAMETERS
-        value: ${{ coalesce(variables['CUSTOM_PARAMS'], '') }} # Secure method of adding custom Flyway Parameters (Example -X for debug). Default value of '' used if no Custom Params found.'
+        value: $[coalesce(variables['CUSTOM_PARAMS'], '')] # Secure method of adding custom Flyway Parameters (Example -X for debug). Default value of '' used if no Custom Params found.'
       - name: generateReport
         value: "true" # Turn to false to skip the CHECK report stage tasks
       - name: FLYWAY_CHECK_DRIFT_ON_MIGRATE
