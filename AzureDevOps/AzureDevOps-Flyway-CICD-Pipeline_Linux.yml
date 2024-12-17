@@ -11,36 +11,32 @@ trigger: none
 #   include:
 #     - migrations/*
 
-### Step 1: Define Stage Variables ###
-### Build Stage Variables - Create a group named 'AutoPilotBuild' ###
+# Step 1: Stage Variables - So that all variables are kept secure, it's recommended that Library Variable Groups are used.
+### Build Stage Variables - Create 'AutoPilotBuild' Variable Group ###
 ### To Create a Libary Variable Group, Click Pipelines > Library > + Variable Group ###
-# TARGET_DATABASE_URL - Leave blank to use the database URL from the Flyway Project TOML file.
-# Example: jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotDev;encrypt=true;integratedSecurity=true;trustServerCertificate=true
-# TARGET_DATABASE_USERNAME: Leave blank if using integratedSecurity (default).
-# TARGET_DATABASE_PASSWORD: Leave blank if using integratedSecurity (default).
+# "TARGET_DATABASE_USERNAME"- Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# "TARGET_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# CUSTOM_PARAMS: Optional - Used for passing custom Flyway Parameters to each Flyway command
 ### End of Build Stage Variable Group ###
 
-### Test Stage Variables - Create a group named 'AutoPilotTest' ###
+### Test Stage Variables - Create 'AutoPilotTest' Variable Group ###
 ### To Create a Libary Variable Group, Click Pipelines > Library > + Variable Group ###
-# TARGET_DATABASE_URL: Leave blank to use the Flyway Project TOML file.
-# Example: jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true
-# TARGET_DATABASE_USERNAME: Leave blank if using integratedSecurity (default).
-# TARGET_DATABASE_PASSWORD: Leave blank if using integratedSecurity (default).
-# REPORT_DATABASE_URL: Same default behavior as TARGET_DATABASE_URL.
-# REPORT_DATABASE_USERNAME: Leave blank if using integratedSecurity (default).
-# REPORT_DATABASE_PASSWORD: Leave blank if using integratedSecurity (default).
+# "TARGET_DATABASE_USERNAME" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# "TARGET_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# "REPORT_DATABASE_USERNAME" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# "REPORT_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# CUSTOM_PARAMS: Optional - Used for passing custom Flyway Parameters to each Flyway command
 ### End of Test Stage Variable Group ###
 
-### Prod Stage Variables - Create a group named'AutoPilotProd' ###
+### Prod Stage Variables - Create 'AutoPilotProd' Variable Group ###
 ### To Create a Libary Variable Group, Click Pipelines > Library > + Variable Group ###
-# TARGET_DATABASE_URL: Leave blank to use the Flyway Project TOML file.
-# Example: jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true
-# TARGET_DATABASE_USERNAME: Leave blank if using integratedSecurity (default).
-# TARGET_DATABASE_PASSWORD: Leave blank if using integratedSecurity (default).
-# REPORT_DATABASE_URL: Same default behavior as TARGET_DATABASE_URL.
-# REPORT_DATABASE_USERNAME: Leave blank if using integratedSecurity (default).
-# REPORT_DATABASE_PASSWORD: Leave blank if using integratedSecurity (default).
-### End of Prod Stage Variable Group ###                                                                                                                         
+# "TARGET_DATABASE_USERNAME" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# "TARGET_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# "REPORT_DATABASE_USERNAME" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# "REPORT_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
+# CUSTOM_PARAMS: Optional - Used for passing custom Flyway Parameters to each Flyway command
+### End of Prod Stage Variable Group ###   
+
 pool:
   # Step 2 - Set the agent pool #
   name: "$(AGENT_POOL)" # For use with the default Self-Hosted agent setup
