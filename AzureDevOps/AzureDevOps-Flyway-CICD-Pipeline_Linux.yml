@@ -87,8 +87,8 @@ stages:
         value: "AutoPilotBuild"
       - name: Environment
         value: "Build" # This variable refers to the environment name present in the Flyway Projects TOML file.
-      - name: CUSTOM_PARAMS
-        value: "$(CUSTOM_PARAMS)" # Secure method of adding custom Flyway Parameters (Example -X for debug)
+      - name: CUSTOM_PARAMETERS
+        value: ${{ coalesce(variables['CUSTOM_PARMS'], '') }} # Secure method of adding custom Flyway Parameters (Example -X for debug). Default value of '' used if no Custom Params found.'
       - name: EXECUTE_BUILD
         value: "true" # Turn to false to skip the build stage tasks
       - name: publishArtifacts
@@ -115,7 +115,7 @@ stages:
             FLYWAY_TOKEN: $(FLYWAY_TOKEN)
         # Step 2 - Ensure the Build Database is cleaned of all objects, meaning the build starts from scratch
         - script: |
-            flyway info clean info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations" $(CUSTOM_PARAMS)
+            flyway info clean info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations" $(CUSTOM_PARAMETERS)
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           displayName: 'Clean Build DB'
@@ -124,14 +124,14 @@ stages:
             FLYWAY_CLEAN_DISABLED: false # This should only be disabled for temporary sandbox databases, like Build
         # Step 3 - Migrate all scripts from the migration folder, to verify they can be deployed against an empty database. This is the quickest way to get feedback about problematic scripts
         - script: |
-            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -baselineOnMigrate=true -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations" "-publishResult=$(FLYWAY_PUBLISH_RESULT)" "-flywayServicePublish.publishReport=$(FLYWAY_PUBLISH_RESULT)" "-reportEnabled=$(FLYWAY_PUBLISH_RESULT)" $(CUSTOM_PARAMS)
+            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -baselineOnMigrate=true -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations" "-publishResult=$(FLYWAY_PUBLISH_RESULT)" "-flywayServicePublish.publishReport=$(FLYWAY_PUBLISH_RESULT)" "-reportEnabled=$(FLYWAY_PUBLISH_RESULT)" $(CUSTOM_PARAMETERS)
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           condition: and(succeeded(), eq(variables['EXECUTE_BUILD'], true))
           displayName: 'Validate Migrate Scripts'
         # Step 4 (Optional) - Undo all relevant migrations using corresponding rollback script, to validate they can be run. This helps to reduce the chance the script will fail during a real life rollback scenario 
         - script: |
-            flyway info undo info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations" -target="$(FIRST_UNDO_SCRIPT)" $(CUSTOM_PARAMS)
+            flyway info undo info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations" -target="$(FIRST_UNDO_SCRIPT)" $(CUSTOM_PARAMETERS)
           continueOnError: true
           workingDirectory: '$(WORKING_DIRECTORY)'
           condition: and(succeeded(), eq(variables['EXECUTE_BUILD'], true))
@@ -171,8 +171,8 @@ stages:
         value: "Test" # Refers to the environment in the Flyway Project TOML file.
       - name: REPORT_ENVIRONMENT
         value: "Check" # Refers to the report environment in the Flyway Project TOML file.
-      - name: CUSTOM_PARAMS
-        value: "$(CUSTOM_PARAMS)" # Secure method of adding custom Flyway Parameters (Example -X for debug)
+      - name: CUSTOM_PARAMETERS
+        value: ${{ coalesce(variables['CUSTOM_PARMS'], '') }} # Secure method of adding custom Flyway Parameters (Example -X for debug). Default value of '' used if no Custom Params found.'
       - name: generateReport
         value: "true" # Set to false to skip the report generation step
       - name: FLYWAY_CHECK_DRIFT_ON_MIGRATE
@@ -211,7 +211,7 @@ stages:
             FLYWAY_TOKEN: $(FLYWAY_TOKEN)
         # Step 2 - Create Check Report
         - script: |
-              flyway check -dryrun -changes -drift info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -check.buildEnvironment="$(REPORT_ENVIRONMENT)" -environments.$(REPORT_ENVIRONMENT).user="$(REPORT_DATABASE_USERNAME)" -environments.$(REPORT_ENVIRONMENT).password="$(REPORT_DATABASE_PASSWORD)" -configFiles="$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/migrations" "-reportFilename=$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/reports/$(DATABASE_NAME)-Run-$(Build.BuildId)-Check-Report.html" "-publishResult=$(FLYWAY_PUBLISH_RESULT)" "-flywayServicePublish.publishReport=$(FLYWAY_PUBLISH_RESULT)" "-reportEnabled=$(FLYWAY_PUBLISH_RESULT)" $(CUSTOM_PARAMS)
+              flyway check -dryrun -changes -drift info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -check.buildEnvironment="$(REPORT_ENVIRONMENT)" -environments.$(REPORT_ENVIRONMENT).user="$(REPORT_DATABASE_USERNAME)" -environments.$(REPORT_ENVIRONMENT).password="$(REPORT_DATABASE_PASSWORD)" -configFiles="$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/migrations" "-reportFilename=$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/reports/$(DATABASE_NAME)-Run-$(Build.BuildId)-Check-Report.html" "-publishResult=$(FLYWAY_PUBLISH_RESULT)" "-flywayServicePublish.publishReport=$(FLYWAY_PUBLISH_RESULT)" "-reportEnabled=$(FLYWAY_PUBLISH_RESULT)" $(CUSTOM_PARAMETERS)
           workingDirectory: '$(WORKING_DIRECTORY)'
           condition: and(succeeded(), eq(variables['generateReport'], true))
           continueOnError: false
@@ -272,7 +272,7 @@ stages:
             FLYWAY_TOKEN: $(FLYWAY_TOKEN)
         # Step 2 - Flyway - Deploy Pending migrations to target environment
         - script: |
-            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -configFiles="$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/migrations" "-publishResult=$(FLYWAY_PUBLISH_RESULT)" "-flywayServicePublish.publishReport=$(FLYWAY_PUBLISH_RESULT)" "-reportEnabled=$(FLYWAY_PUBLISH_RESULT)" $(CUSTOM_PARAMS)
+            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -configFiles="$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/migrations" "-publishResult=$(FLYWAY_PUBLISH_RESULT)" "-flywayServicePublish.publishReport=$(FLYWAY_PUBLISH_RESULT)" "-reportEnabled=$(FLYWAY_PUBLISH_RESULT)" $(CUSTOM_PARAMETERS)
           condition: succeeded()
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
@@ -293,8 +293,8 @@ stages:
         value: "Prod" # Refers to the environment name in the Flyway Project TOML file.
       - name: REPORT_ENVIRONMENT
         value: "Check" # Refers to the report environment name in the Flyway Project TOML file.
-      - name: CUSTOM_PARAMS
-        value: "$(CUSTOM_PARAMS)" # Secure method of adding custom Flyway Parameters (Example -X for debug)
+      - name: CUSTOM_PARAMETERS
+        value: ${{ coalesce(variables['CUSTOM_PARMS'], '') }} # Secure method of adding custom Flyway Parameters (Example -X for debug). Default value of '' used if no Custom Params found.'
       - name: generateReport
         value: "true" # Set to false to skip the report generation creation step
       - name: FLYWAY_CHECK_DRIFT_ON_MIGRATE
@@ -333,7 +333,7 @@ stages:
             FLYWAY_TOKEN: $(FLYWAY_TOKEN)
         # Step 2 - Create Check Report
         - script: |
-              flyway check -dryrun -changes -drift info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -check.buildEnvironment="$(REPORT_ENVIRONMENT)" -environments.$(REPORT_ENVIRONMENT).user="$(REPORT_DATABASE_USERNAME)" -environments.$(REPORT_ENVIRONMENT).password="$(REPORT_DATABASE_PASSWORD)" -configFiles="$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/migrations" "-reportFilename=$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/reports/$(DATABASE_NAME)-Run-$(Build.BuildId)-Check-Report.html" "-publishResult=$(FLYWAY_PUBLISH_RESULT)" "-flywayServicePublish.publishReport=$(FLYWAY_PUBLISH_RESULT)" "-reportEnabled=$(FLYWAY_PUBLISH_RESULT)" $(CUSTOM_PARAMS)
+              flyway check -dryrun -changes -drift info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -check.buildEnvironment="$(REPORT_ENVIRONMENT)" -environments.$(REPORT_ENVIRONMENT).user="$(REPORT_DATABASE_USERNAME)" -environments.$(REPORT_ENVIRONMENT).password="$(REPORT_DATABASE_PASSWORD)" -configFiles="$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/migrations" "-reportFilename=$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/reports/$(DATABASE_NAME)-Run-$(Build.BuildId)-Check-Report.html" "-publishResult=$(FLYWAY_PUBLISH_RESULT)" "-flywayServicePublish.publishReport=$(FLYWAY_PUBLISH_RESULT)" "-reportEnabled=$(FLYWAY_PUBLISH_RESULT)" $(CUSTOM_PARAMETERS)
           workingDirectory: '$(WORKING_DIRECTORY)'
           condition: eq(variables['generateReport'], true)
           continueOnError: false
@@ -393,7 +393,7 @@ stages:
             FLYWAY_TOKEN: $(FLYWAY_TOKEN)
         # Flyway - Deploy Pending migrations to target environment
         - script: |
-            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -configFiles="$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/migrations" "-publishResult=$(FLYWAY_PUBLISH_RESULT)" "-flywayServicePublish.publishReport=$(FLYWAY_PUBLISH_RESULT)" "-reportEnabled=$(FLYWAY_PUBLISH_RESULT)" $(CUSTOM_PARAMS)
+            flyway info migrate info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -baselineOnMigrate=true -baselineVersion="$(BASELINE_VERSION)" -configFiles="$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/flyway.toml" -locations="filesystem:$(System.ArtifactsDirectory)/Flyway-CI-$(Build.BuildId)/migrations" "-publishResult=$(FLYWAY_PUBLISH_RESULT)" "-flywayServicePublish.publishReport=$(FLYWAY_PUBLISH_RESULT)" "-reportEnabled=$(FLYWAY_PUBLISH_RESULT)" $(CUSTOM_PARAMETERS)
           condition: succeeded()
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
