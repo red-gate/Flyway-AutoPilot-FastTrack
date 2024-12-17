@@ -18,32 +18,27 @@ env:
   ### Step 1: Define Stage Variables ###
   ### Build Stage Variables - Create Below Stage Secrets ###
   ### Navigate to Settings > Environments > Select Build > Create the Environment Secret
-  # TARGET_DATABASE_URL - Leave blank to use the database URL from the Flyway Project TOML file.
-  # Example: jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotDev;encrypt=true;integratedSecurity=true;trustServerCertificate=true
   # TARGET_DATABASE_USERNAME: Leave blank if using integratedSecurity (default).
   # TARGET_DATABASE_PASSWORD: Leave blank if using integratedSecurity (default).
+  # CUSTOM_PARAMS: Optional - Used for passing custom Flyway Parameters to each Flyway command
   ### End of Build Stage Variable Group ###
   
   ### Test Stage Variables - Create Below Stage Secrets ###
   ### Navigate to Settings > Environments > Select Test > Create the Environment Secret
-  # TARGET_DATABASE_URL: Leave blank to use the Flyway Project TOML file.
-  # Example: jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true
   # TARGET_DATABASE_USERNAME: Leave blank if using integratedSecurity (default).
   # TARGET_DATABASE_PASSWORD: Leave blank if using integratedSecurity (default).
-  # REPORT_DATABASE_URL: Same default behavior as TARGET_DATABASE_URL.
   # REPORT_DATABASE_USERNAME: Leave blank if using integratedSecurity (default).
   # REPORT_DATABASE_PASSWORD: Leave blank if using integratedSecurity (default).
+  # CUSTOM_PARAMS: Optional - Used for passing custom Flyway Parameters to each Flyway command
   ### End of Test Stage Variable Group ###
   
   ### Prod Stage Variables ###
   ### Navigate to Settings > Environments > Select Prod > Create the Environment Secret
-  # TARGET_DATABASE_URL: Leave blank to use the Flyway Project TOML file.
-  # Example: jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=AutoPilotTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true
   # TARGET_DATABASE_USERNAME: Leave blank if using integratedSecurity (default).
   # TARGET_DATABASE_PASSWORD: Leave blank if using integratedSecurity (default).
-  # REPORT_DATABASE_URL: Same default behavior as TARGET_DATABASE_URL.
   # REPORT_DATABASE_USERNAME: Leave blank if using integratedSecurity (default).
   # REPORT_DATABASE_PASSWORD: Leave blank if using integratedSecurity (default).
+  # CUSTOM_PARAMS: Optional - Used for passing custom Flyway Parameters to each Flyway command
   ### End of Test Stage Variable Group ###
   
   # Step 3: Authenticate Flyway with Personal Access Tokens (PATs)
