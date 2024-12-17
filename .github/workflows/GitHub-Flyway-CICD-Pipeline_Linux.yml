@@ -82,7 +82,7 @@ jobs:
       TARGET_DATABASE_URL: "${{ secrets.TARGET_DATABASE_URL }}"
       TARGET_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}"
       TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}"
-      CUSTOM_PARAMS: "${{ secrets.CUSTOM_PARMS }}" # Secure method of adding custom Flyway Parameters (Example -X for debug)
+      CUSTOM_PARAMS: "${{ secrets.CUSTOM_PARAMS }}" # Secure method of adding custom Flyway Parameters (Example -X for debug)
       EXECUTE_BUILD: 'true' # Turn to false to skip the build stage tasks
       publishArtifacts: 'true' # Turn to false to skip the artifact upload
     steps:
@@ -147,7 +147,7 @@ jobs:
       REPORT_DATABASE_URL: "${{ secrets.REPORT_DATABASE_URL }}" 
       REPORT_DATABASE_USERNAME: "${{ secrets.REPORT_DATABASE_USERNAME }}" 
       REPORT_DATABASE_PASSWORD: "${{ secrets.REPORT_DATABASE_PASSWORD }}"
-      CUSTOM_PARAMS: "${{ secrets.CUSTOM_PARMS }}" # Secure method of adding custom Flyway Parameters (Example -X for debug)
+      CUSTOM_PARAMS: "${{ secrets.CUSTOM_PARAMS }}" # Secure method of adding custom Flyway Parameters (Example -X for debug)
       generateReport: 'true' # Turn to false to skip the CHECK report stage tasks
       FLYWAY_CHECK_DRIFT_ON_MIGRATE: 'true' # Turn to false to skip the Drift Report upload to Flyway Pipelines (If enabled)      
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -204,7 +204,7 @@ jobs:
       REPORT_DATABASE_URL: "${{ secrets.REPORT_DATABASE_URL }}" 
       REPORT_DATABASE_USERNAME: "${{ secrets.REPORT_DATABASE_USERNAME }}"
       REPORT_DATABASE_PASSWORD: "${{ secrets.REPORT_DATABASE_PASSWORD }}"
-      CUSTOM_PARAMS: "${{ secrets.CUSTOM_PARMS }}" # Secure method of adding custom Flyway Parameters (Example -X for debug)
+      CUSTOM_PARAMS: "${{ secrets.CUSTOM_PARAMS }}" # Secure method of adding custom Flyway Parameters (Example -X for debug)
       generateReport: 'true' # Turn to false to skip the CHECK report stage tasks
       FLYWAY_CHECK_DRIFT_ON_MIGRATE: 'true' # Turn to false to skip the Drift Report upload to Flyway Pipelines (If enabled)
     steps:
