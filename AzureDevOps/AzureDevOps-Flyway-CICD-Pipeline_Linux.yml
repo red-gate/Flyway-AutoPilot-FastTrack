@@ -81,7 +81,7 @@ stages:
       - group: "AutoPilotBuild" # Expected Variables - TARGET_DATABASE_URL/TARGET_DATABASE_USER/TARGET_DATABASE_PASSWORD
       - name: DATABASE_NAME
         value: "AutoPilotBuild"
-      - name: Environment
+      - name: TARGET_ENVIRONMENT
         value: "Build" # This variable refers to the environment name present in the Flyway Projects TOML file.
       - name: CUSTOM_PARAMETERS
         value: $[coalesce(variables['CUSTOM_PARAMS'], '')] # Secure method of adding custom Flyway Parameters (Example -X for debug). Default value of '' used if no Custom Params found.'
@@ -163,7 +163,7 @@ stages:
       - group: "AutoPilotTest" # Expected Variables - TARGET_DATABASE_URL/TARGET_DATABASE_USER/TARGET_DATABASE_PASSWORD/REPORT_DATABASE_URL/REPORT_DATABASE_USER/REPORT_DATABASE_PASSWORD
       - name: DATABASE_NAME
         value: "AutoPilotTest"
-      - name: ENVIRONMENT
+      - name: TARGET_ENVIRONMENT
         value: "Test" # Refers to the environment in the Flyway Project TOML file.
       - name: REPORT_ENVIRONMENT
         value: "Check" # Refers to the report environment in the Flyway Project TOML file.
@@ -285,7 +285,7 @@ stages:
       # Example Variable syntax if required. Sensitive values should ALWAYS be kept secure
       - name: DATABASE_NAME
         value: "AutoPilotProd"
-      - name: ENVIRONMENT 
+      - name: TARGET_ENVIRONMENT 
         value: "Prod" # Refers to the environment name in the Flyway Project TOML file.
       - name: REPORT_ENVIRONMENT
         value: "Check" # Refers to the report environment name in the Flyway Project TOML file.
