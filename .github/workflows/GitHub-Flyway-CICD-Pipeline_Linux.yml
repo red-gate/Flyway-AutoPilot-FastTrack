@@ -16,31 +16,15 @@ env:
   # Enable this for additional debug logging
   ACTIONS_RUNNER_DEBUG: false
 
-  ### Step 1: Define Stage Variables ###
-  ### Build Stage Variables - Create Below Stage Secrets ###
-  ### Navigate to Settings > Environments > Select Build > Create the Environment Secret
+  ### Step 1: Define Environment Secrets ###
+  ### Environment Secrets - Create Environment Secrets ###
+  ### Navigate to Settings > Secrets & Variables > Actions
+  # FLYWAY_EMAIL: Enter the email address linked to the Redgate Account that created the PAT
+  # FLYWAY_TOKEN: Enter the PAT Value (This should be treated like a password and thus as a secure variable.
   # TARGET_DATABASE_USERNAME: Leave blank if using integratedSecurity (default).
   # TARGET_DATABASE_PASSWORD: Leave blank if using integratedSecurity (default).
   # CUSTOM_PARAMS: Optional - Used for passing custom Flyway Parameters to each Flyway command
-  ### End of Build Stage Variable Group ###
-  
-  ### Test Stage Variables - Create Below Stage Secrets ###
-  ### Navigate to Settings > Environments > Select Test > Create the Environment Secret
-  # TARGET_DATABASE_USERNAME: Leave blank if using integratedSecurity (default).
-  # TARGET_DATABASE_PASSWORD: Leave blank if using integratedSecurity (default).
-  # REPORT_DATABASE_USERNAME: Leave blank if using integratedSecurity (default).
-  # REPORT_DATABASE_PASSWORD: Leave blank if using integratedSecurity (default).
-  # CUSTOM_PARAMS: Optional - Used for passing custom Flyway Parameters to each Flyway command
-  ### End of Test Stage Variable Group ###
-  
-  ### Prod Stage Variables ###
-  ### Navigate to Settings > Environments > Select Prod > Create the Environment Secret
-  # TARGET_DATABASE_USERNAME: Leave blank if using integratedSecurity (default).
-  # TARGET_DATABASE_PASSWORD: Leave blank if using integratedSecurity (default).
-  # REPORT_DATABASE_USERNAME: Leave blank if using integratedSecurity (default).
-  # REPORT_DATABASE_PASSWORD: Leave blank if using integratedSecurity (default).
-  # CUSTOM_PARAMS: Optional - Used for passing custom Flyway Parameters to each Flyway command
-  ### End of Test Stage Variable Group ###
+  ### End of Environment Variables ###
   
   # Step 3: Authenticate Flyway with Personal Access Tokens (PATs)
   # Details on how to do this can be found here: https://documentation.red-gate.com/flyway/flyway-cli-and-api/tutorials/tutorial-personal-access-tokens
@@ -74,7 +58,6 @@ jobs:
       displayName: 'Build'
       DATABASE_NAME: 'AutoPilotBuild'
       ENVIRONMENT: 'Build' # This variable refers to the environment name present in the Flyway Projects TOML file. 
-      TARGET_DATABASE_URL: "${{ secrets.TARGET_DATABASE_URL }}"
       TARGET_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}"
       TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}"
       CUSTOM_PARAMS: "${{ secrets.CUSTOM_PARAMS }}" # Secure method of adding custom Flyway Parameters (Example -X for debug)
@@ -135,13 +118,11 @@ jobs:
       stage: 'Test'
       DATABASE_NAME: "AutoPilotTest"
       ENVIRONMENT: "Test" # Refers to the environment in the Flyway Project TOML file.
-      TARGET_DATABASE_URL: "${{ secrets.TARGET_DATABASE_URL }}"
       TARGET_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}"
       TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}"
       REPORT_ENVIRONMENT: "Check"
-      REPORT_DATABASE_URL: "${{ secrets.REPORT_DATABASE_URL }}" 
-      REPORT_DATABASE_USERNAME: "${{ secrets.REPORT_DATABASE_USERNAME }}" 
-      REPORT_DATABASE_PASSWORD: "${{ secrets.REPORT_DATABASE_PASSWORD }}"
+      REPORT_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}" # Optional - Change to a different secret if the connection details for the report database differs from the target
+      REPORT_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}" # Optional - Change to a different secret if the connection details for the report database differs from the target
       CUSTOM_PARAMS: "${{ secrets.CUSTOM_PARAMS }}" # Secure method of adding custom Flyway Parameters (Example -X for debug)
       generateReport: 'true' # Turn to false to skip the CHECK report stage tasks
       FLYWAY_CHECK_DRIFT_ON_MIGRATE: 'true' # Turn to false to skip the Drift Report upload to Flyway Pipelines (If enabled)      
@@ -192,13 +173,11 @@ jobs:
       stage: 'Prod'
       DATABASE_NAME: "AutoPilotProd"
       ENVIRONMENT: "Prod" # Refers to the environment name in the Flyway Project TOML file.
-      TARGET_DATABASE_URL: "${{ secrets.TARGET_DATABASE_URL }}"
       TARGET_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}" 
       TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}" 
       REPORT_ENVIRONMENT: "Check"
-      REPORT_DATABASE_URL: "${{ secrets.REPORT_DATABASE_URL }}" 
-      REPORT_DATABASE_USERNAME: "${{ secrets.REPORT_DATABASE_USERNAME }}"
-      REPORT_DATABASE_PASSWORD: "${{ secrets.REPORT_DATABASE_PASSWORD }}"
+      REPORT_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}" # Optional - Change to a different secret if the connection details for the report database differs from the target
+      REPORT_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}" # Optional - Change to a different secret if the connection details for the report database differs from the target
       CUSTOM_PARAMS: "${{ secrets.CUSTOM_PARAMS }}" # Secure method of adding custom Flyway Parameters (Example -X for debug)
       generateReport: 'true' # Turn to false to skip the CHECK report stage tasks
       FLYWAY_CHECK_DRIFT_ON_MIGRATE: 'true' # Turn to false to skip the Drift Report upload to Flyway Pipelines (If enabled)
