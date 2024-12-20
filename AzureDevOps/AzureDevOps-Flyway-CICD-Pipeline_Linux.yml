@@ -16,7 +16,7 @@ trigger: none
 ### To Create a Libary Variable Group, Click Pipelines > Library > + Variable Group ###
 # "TARGET_DATABASE_USERNAME"- Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
 # "TARGET_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
-# CUSTOM_PARAMS: Optional - Used for passing custom Flyway Parameters to each Flyway command
+# "CUSTOM_PARAMS": Optional - Used for passing custom Flyway Parameters to each Flyway command
 ### End of Build Stage Variable Group ###
 
 ### Test Stage Variables - Create 'AutoPilotTest' Variable Group ###
@@ -25,7 +25,7 @@ trigger: none
 # "TARGET_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
 # "REPORT_DATABASE_USERNAME" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
 # "REPORT_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
-# CUSTOM_PARAMS: Optional - Used for passing custom Flyway Parameters to each Flyway command
+# "CUSTOM_PARAMS": Optional - Used for passing custom Flyway Parameters to each Flyway command
 ### End of Test Stage Variable Group ###
 
 ### Prod Stage Variables - Create 'AutoPilotProd' Variable Group ###
@@ -34,7 +34,7 @@ trigger: none
 # "TARGET_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
 # "REPORT_DATABASE_USERNAME" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
 # "REPORT_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
-# CUSTOM_PARAMS: Optional - Used for passing custom Flyway Parameters to each Flyway command
+# "CUSTOM_PARAMS": Optional - Used for passing custom Flyway Parameters to each Flyway command
 ### End of Prod Stage Variable Group ###   
 
 pool:
