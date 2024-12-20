@@ -69,7 +69,7 @@ if ($flywayVersion -ieq "latest") {
 Write-Host "Using Flyway CLI version $flywayVersion"
 
 # Flyway URL to download CLI
-$Url = "https://download.red-gate.com/maven/release/org/flywaydb/enterprise/flyway-commandline/$flywayVersion/flyway-commandline-$flywayVersion-windows-x64.zip"
+$Url = "https://download.red-gate.com/maven/release/com/redgate/flyway/flyway-commandline/$flywayVersion/flyway-commandline-$flywayVersion-windows-x64.zip"
 
 # Path for downloaded zip file
 $DownloadZipFile = "$flywayInstallDirectory" + $(Split-Path -Path $Url -Leaf)

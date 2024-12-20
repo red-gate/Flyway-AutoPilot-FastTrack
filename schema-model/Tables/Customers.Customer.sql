@@ -9,7 +9,7 @@ CREATE TABLE [Customers].[Customer]
 [Address] [nvarchar] (200) NULL
 )
 GO
-ALTER TABLE [Customers].[Customer] ADD CONSTRAINT [PK__Customer__A4AE64B82992B4E4] PRIMARY KEY CLUSTERED ([CustomerID])
+ALTER TABLE [Customers].[Customer] ADD PRIMARY KEY CLUSTERED ([CustomerID])
 GO
-ALTER TABLE [Customers].[Customer] ADD CONSTRAINT [UQ__Customer__A9D10534B17A14F8] UNIQUE NONCLUSTERED ([Email])
+ALTER TABLE [Customers].[Customer] ADD UNIQUE NONCLUSTERED ([Email])
 GO
