@@ -8,7 +8,7 @@ if ($null -ne ${env:FLYWAY_VERSION}) {
   } else {
   Write-Output "Using Local Variables for Flyway CLI Version Number"
   # Local Variables - If Env Variables Not Set - Target Database Connection Details
-  $flywayVersion = '10.20.0'
+  $flywayVersion = 'Latest'
 }
 
 # Flyway Download Location Check
@@ -31,7 +31,7 @@ if ($null -ne ${env:FLYWAY_PATH_LOCATION}) {
     } else {
     Write-Output "Using Local Variables for Flyway CLI PATH Location"
     # Local Variables - If Env Variables Not Set - PATH Location (Defaulting to User)
-    $flywayPathLocation = 'User'
+    $flywayPathLocation = 'Machine'
 }
 
 # Fetch the content of the web page
@@ -139,12 +139,65 @@ if (Get-Command flyway -ErrorAction SilentlyContinue) {
         Write-Host "Environment Variables - Get Updated Values"
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path","User") + ";" + [System.Environment]::GetEnvironmentVariable("Path","Machine")
 
-         # Add Flyway to the PATH if not already added (one-time setup)
-        if (-Not $Env:Path.Contains("$flywayInstallDirectory")) {
-            [System.Environment]::SetEnvironmentVariable('Path', "$flywayInstallDirectory;$([System.Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::$flywayPathLocation))", [System.EnvironmentVariableTarget]::$flywayPathLocation)
-            Write-Host "Updated Local Path Variable"
-            $env:Path = [System.Environment]::GetEnvironmentVariable("Path","User") + ";" + [System.Environment]::GetEnvironmentVariable("Path","Machine")
-            Write-Host "Flyway CLI added to Environment Variable PATH."
+        # Define the Update-PathVariable function
+        function Update-PathVariable {
+            param (
+                [string]$FlywayInstallDirectory,
+                [string]$PreferredTarget = "Machine" # Default target is Machine
+            )
+
+            $updateSuccess = $false
+
+            try {
+                # Attempt to update the preferred PATH
+                [System.Environment]::SetEnvironmentVariable(
+                    'Path',
+                    "$FlywayInstallDirectory;$([System.Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::$PreferredTarget))",
+                    [System.EnvironmentVariableTarget]::$PreferredTarget
+                )
+                $updateSuccess = $true
+                Write-Host "Flyway CLI added to $PreferredTarget Environment Variable PATH successfully."
+            } catch {
+                Write-Warning "Failed to update $PreferredTarget PATH. Error: $_"
+                Write-Warning "Elevate Agent/Runner to local admin to set Machine PATH if required"
+            }
+
+            if (-not $updateSuccess) {
+                try {
+                    # Fallback to updating User PATH
+                    [System.Environment]::SetEnvironmentVariable(
+                        'Path',
+                        "$FlywayInstallDirectory;$([System.Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::User))",
+                        [System.EnvironmentVariableTarget]::User
+                    )
+                    $updateSuccess = $true
+                    Write-Host "Flyway CLI added to User Environment Variable PATH as a fallback."
+                } catch {
+                    Write-Error "Failed to update both Machine and User PATH. Error: $_"
+                }
+            }
+
+            # Refresh PATH in the current session
+            $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "User") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+
+            # Return the status of the update
+            return $updateSuccess
+        }
+
+        # Add Flyway to the PATH if not already added (one-time setup)
+        if (-not $Env:Path.Contains("$flywayInstallDirectory")) {
+            Write-Host "Flyway CLI not found in PATH. Attempting to add it..."
+
+            # Call the Update-PathVariable function
+            $result = Update-PathVariable -FlywayInstallDirectory $flywayInstallDirectory -PreferredTarget $flywayPathLocation
+
+            if ($result) {
+                Write-Host "Flyway CLI successfully added to PATH."
+            } else {
+                Write-Error "Failed to add Flyway CLI to PATH. Manual intervention may be required."
+            }
+        } else {
+            Write-Host "Flyway CLI is already in the PATH. No action needed."
         }
 
         # Verify the new version
@@ -175,12 +228,64 @@ if (Get-Command flyway -ErrorAction SilentlyContinue) {
         Move-Item $ExtractPath/flyway-$flywayVersion/* $ExtractPath -Force
     }
 
+    # Define the Update-PathVariable function
+    function Update-PathVariable {
+        param (
+            [string]$FlywayInstallDirectory,
+            [string]$PreferredTarget = "Machine" # Default target is Machine
+        )
+
+        $updateSuccess = $false
+
+        try {
+            # Attempt to update the preferred PATH
+            [System.Environment]::SetEnvironmentVariable(
+                'Path',
+                "$FlywayInstallDirectory;$([System.Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::$PreferredTarget))",
+                [System.EnvironmentVariableTarget]::$PreferredTarget
+            )
+            $updateSuccess = $true
+            Write-Host "Flyway CLI added to $PreferredTarget Environment Variable PATH successfully."
+        } catch {
+            Write-Warning "Failed to update $PreferredTarget PATH. Error: $_"
+        }
+
+        if (-not $updateSuccess) {
+            try {
+                # Fallback to updating User PATH
+                [System.Environment]::SetEnvironmentVariable(
+                    'Path',
+                    "$FlywayInstallDirectory;$([System.Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::User))",
+                    [System.EnvironmentVariableTarget]::User
+                )
+                $updateSuccess = $true
+                Write-Host "Flyway CLI added to User Environment Variable PATH as a fallback."
+            } catch {
+                Write-Error "Failed to update both Machine and User PATH. Error: $_"
+            }
+        }
+
+        # Refresh PATH in the current session
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "User") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+
+        # Return the status of the update
+        return $updateSuccess
+    }
+
     # Add Flyway to the PATH if not already added (one-time setup)
-    if (-Not $Env:Path.Contains("$flywayInstallDirectory")) {
-        [System.Environment]::SetEnvironmentVariable('Path', "$flywayInstallDirectory;$([System.Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::$flywayPathLocation))", [System.EnvironmentVariableTarget]::$flywayPathLocation)
-        Write-Host "Updated Local Path Variable"
-        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","User") + ";" + [System.Environment]::GetEnvironmentVariable("Path","Machine")
-        Write-Host "Flyway CLI added to Environment Variable PATH."
+    if (-not $Env:Path.Contains("$flywayInstallDirectory")) {
+        Write-Host "Flyway CLI not found in PATH. Attempting to add it..."
+
+        # Call the Update-PathVariable function
+        $result = Update-PathVariable -FlywayInstallDirectory $flywayInstallDirectory -PreferredTarget $flywayPathLocation
+
+        if ($result) {
+            Write-Host "Flyway CLI successfully added to PATH."
+        } else {
+            Write-Error "Failed to add Flyway CLI to PATH. Manual intervention may be required."
+        }
+    } else {
+        Write-Host "Flyway CLI is already in the PATH. No action needed."
     }
     Write-Host "Flyway CLI Download and Install Complete"
     Exit
