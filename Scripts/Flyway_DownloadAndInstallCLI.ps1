@@ -35,13 +35,13 @@ if ($null -ne ${env:FLYWAY_PATH_LOCATION}) {
 }
 
 # Fetch the content of the web page
-Write-Output "Analysing https://documentation.red-gate.com/fd/command-line-184127404.html for Latest Version Number"
+Write-Output "Analysing https://documentation.red-gate.com/fd/command-line-277579359.html for Latest Version Number"
 # Check if $flywayVersion is 'latest' (case-insensitive)
 if ($flywayVersion -ieq "latest") {
     # Fetch the content of the web page
     try {
         # Define the URL to fetch and fetch page content
-        $url = "https://documentation.red-gate.com/fd/command-line-184127404.html"
+        $url = "https://documentation.red-gate.com/fd/command-line-277579359.html"
         $response = Invoke-WebRequest -Uri $url -UseBasicParsing
         $content = $response.Content
 
