@@ -12,11 +12,18 @@ trigger: none
 #     - migrations/*
 
 # Step 1: Stage Variables - So that all variables are kept secure, it's recommended that Library Variable Groups are used.
+### Global Stage Variables - Create 'AutoPilotGlobal' Variable Group ###
+### To Create a Libary Variable Group, Click Pipelines > Library > + Variable Group ###
+# "FLYWAY_EMAIL" - Email linked to the Redgate account that created the PAT.
+# "FLYWAY_TOKEN" - PAT value (treat like a password; use secure variables or a Library Group).
+# "AGENT_POOL" - The name of the agent pool to be used throughout the pipeline
+### End of Global Stage Variable Group ###
+
 ### Build Stage Variables - Create 'AutoPilotBuild' Variable Group ###
 ### To Create a Libary Variable Group, Click Pipelines > Library > + Variable Group ###
 # "TARGET_DATABASE_USERNAME"- Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
 # "TARGET_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
-# "CUSTOM_PARAMS": Optional - Used for passing custom Flyway Parameters to each Flyway command
+# "CUSTOM_PARAMS" - Optional - Used for passing custom Flyway Parameters to each Flyway command
 ### End of Build Stage Variable Group ###
 
 ### Test Stage Variables - Create 'AutoPilotTest' Variable Group ###
@@ -25,7 +32,7 @@ trigger: none
 # "TARGET_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
 # "REPORT_DATABASE_USERNAME" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
 # "REPORT_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
-# "CUSTOM_PARAMS": Optional - Used for passing custom Flyway Parameters to each Flyway command
+# "CUSTOM_PARAMS" - Optional - Used for passing custom Flyway Parameters to each Flyway command
 ### End of Test Stage Variable Group ###
 
 ### Prod Stage Variables - Create 'AutoPilotProd' Variable Group ###
@@ -34,7 +41,7 @@ trigger: none
 # "TARGET_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
 # "REPORT_DATABASE_USERNAME" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
 # "REPORT_DATABASE_PASSWORD" - Leave Username/Password values blank if integratedSecurity utilized (Which is default behaviour)
-# "CUSTOM_PARAMS": Optional - Used for passing custom Flyway Parameters to each Flyway command
+# "CUSTOM_PARAMS" - Optional - Used for passing custom Flyway Parameters to each Flyway command
 ### End of Prod Stage Variable Group ###   
 
 pool:
@@ -171,6 +178,8 @@ stages:
         value: $[coalesce(variables['CUSTOM_PARAMS'], '')] # Secure method of adding custom Flyway Parameters (Example -X for debug). Default value of '' used if no Custom Params found.'
       - name: generateReport
         value: "true" # Set to false to skip the report generation step
+      - name: pauseForCodeReview
+        value: "false" # Turn to true to pause pipeline ahead of deployment
       - name: FLYWAY_CHECK_DRIFT_ON_MIGRATE
         value: "$(FLYWAY_DRIFT_ON_MIGRATE)" # Set to true to enable the Flyway Pipelines Drift Detection functionality
     jobs:
@@ -293,6 +302,8 @@ stages:
         value: $[coalesce(variables['CUSTOM_PARAMS'], '')] # Secure method of adding custom Flyway Parameters (Example -X for debug). Default value of '' used if no Custom Params found.'
       - name: generateReport
         value: "true" # Set to false to skip the report generation creation step
+      - name: pauseForCodeReview
+        value: "true" # Turn to true to pause pipeline ahead of deployment
       - name: FLYWAY_CHECK_DRIFT_ON_MIGRATE
         value: "$(FLYWAY_DRIFT_ON_MIGRATE)" # Set to true to enable the Flyway Pipelines Drift Detection functionality
     jobs:
@@ -349,7 +360,7 @@ stages:
       steps:
         - task: ManualValidation@0
           displayName: 'Review Change Report Prior To Release'
-          condition: eq(variables['generateReport'], true)
+          condition: eq(variables['pauseForCodeReview'], true)
           timeoutInMinutes: 4320
           inputs:
             notifyUsers: |
