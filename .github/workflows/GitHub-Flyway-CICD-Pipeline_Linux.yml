@@ -3,11 +3,9 @@
 name: GitHub-Flyway-AutoPilot-Pipeline-Linux
 
 on:
-  # Triggers the workflow on push or pull request events but only for the "release" branch
-  #push:
-    #branches:
-      #- release
-      #- 'migrations/**'
+  pull_request:
+    branches:
+      - main
  
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
