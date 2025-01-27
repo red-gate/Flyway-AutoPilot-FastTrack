@@ -22,7 +22,7 @@ get_installed_version() {
 # Function to get the latest version from the website
 get_latest_version_from_website() {
   # Fetch the webpage content
-  content=$(curl -s https://documentation.red-gate.com/fd/command-line-277579359.html)
+  content=$(curl -s https://documentation.red-gate.com/flyway/reference/usage/command-line.html)
 
   # Extract version number using regex
   latest_version=$(echo "$content" | grep -oP 'flyway-commandline-\K\d+\.\d+\.\d+(?=-windows-x64.zip)' | head -n 1)
