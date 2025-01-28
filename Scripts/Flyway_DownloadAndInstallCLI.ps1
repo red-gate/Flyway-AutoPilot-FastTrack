@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 
-# Flyway Version to Use (Check for latest version: https://documentation.red-gate.com/fd/command-line-184127404.html)
+# Flyway Version to Use (Check for latest version: https://documentation.red-gate.com/flyway/reference/usage/command-line)
 if ($null -ne ${env:FLYWAY_VERSION}) {
   # Environment Variables - Use these if set as a variable - Target Database Connection Details
   Write-Output "Using Environment Variables for Flyway CLI Version Number"
@@ -35,13 +35,13 @@ if ($null -ne ${env:FLYWAY_PATH_LOCATION}) {
 }
 
 # Fetch the content of the web page
-Write-Output "Analysing https://documentation.red-gate.com/fd/command-line-277579359.html for Latest Version Number"
+Write-Output "Analysing https://documentation.red-gate.com/flyway/reference/usage/command-line for Latest Version Number"
 # Check if $flywayVersion is 'latest' (case-insensitive)
 if ($flywayVersion -ieq "latest") {
     # Fetch the content of the web page
     try {
         # Define the URL to fetch and fetch page content
-        $url = "https://documentation.red-gate.com/fd/command-line-277579359.html"
+        $url = "https://documentation.red-gate.com/flyway/reference/usage/command-line"
         $response = Invoke-WebRequest -Uri $url -UseBasicParsing
         $content = $response.Content
 
