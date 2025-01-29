@@ -3,5 +3,5 @@ CREATE TABLE Sales.Promotions (
     Name NVARCHAR(50) NOT NULL,
     StartDate DATE NOT NULL,
     EndDate DATE NOT NULL,
-    DiscountPercentage DECIMAL(4,2) CHECK (DiscountPercentage BETWEEN 0 AND 100)
+    DiscountPercentage DECIMAL(4,2)
 );
