@@ -7,10 +7,9 @@ Create a `Sales.Promotions` table with the following columns:
 - `Name` (NVARCHAR(50))
 - `StartDate` (DATE)
 - `EndDate` (DATE)
-- `DiscountPercentage` (DECIMAL(4,2), must be between 0 and 100)
+- `DiscountPercentage` (DECIMAL(4,2))
 
 **Hints**:
 - Use the `CREATE TABLE` statement.
-- Add constraints for the primary key and discount percentage range.
 
 Verify the table creation by checking the schema after running the migration.
