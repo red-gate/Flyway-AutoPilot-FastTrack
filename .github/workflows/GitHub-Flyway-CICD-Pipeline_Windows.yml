@@ -20,6 +20,7 @@ env:
   ### Navigate to Settings > Secrets & Variables > Actions
   # FLYWAY_EMAIL: Enter the email address linked to the Redgate Account that created the PAT
   # FLYWAY_TOKEN: Enter the PAT Value (This should be treated like a password and thus as a secure variable.
+  # FLYWAY_AUTH_DISABLED: (Optional) - Create and set to true to skip the auth check stage
   # TARGET_DATABASE_USERNAME: Leave blank if using integratedSecurity (default).
   # TARGET_DATABASE_PASSWORD: Leave blank if using integratedSecurity (default).
   # CUSTOM_PARAMS: Optional - Used for passing custom Flyway Parameters to each Flyway command
@@ -30,6 +31,8 @@ env:
   # Documentation on all available Authentication methods can be found here: https://documentation.red-gate.com/fd/flyway-licensing-263061944.html
   FLYWAY_EMAIL: "${{ secrets.FLYWAY_EMAIL }}" # Enter the email address linked to the Redgate Account that created the PAT
   FLYWAY_TOKEN: "${{ secrets.FLYWAY_TOKEN }}" # Enter the PAT Value (This should be treated like a password and thus as a secure variable.
+  FLYWAY_AUTH_DISABLED: "${{ secrets.FLYWAY_AUTH_DISABLED }}" # Create and set to true to skip the auth check stage, useful when Offline Permits are in use instead.
+
   
   BASELINE_VERSION: "001" # This should match the version number of your baseline script
   FIRST_UNDO_SCRIPT: "002" # This should match the first undo version in your project
@@ -81,7 +84,7 @@ jobs:
           }
       # Step 1 - Flyway License Authentication #
       - name: Flyway Authentication
-        if: ${{ env.EXECUTE_BUILD == 'true' && success() }}
+        if: ${{ env.EXECUTE_BUILD == 'true' && env.FLYWAY_AUTH_DISABLED != 'true' && success() }}
         run: |
          flyway auth -IAgreeToTheEula -email="${{ env.FLYWAY_EMAIL }}" -token="${{ env.FLYWAY_TOKEN }}"
       # Step 2 - Ensure the Build Database is cleaned of all objects, meaning the build starts from scratch
@@ -160,7 +163,7 @@ jobs:
           }
       # Step 1 - Flyway License Authentication #
       - name: Flyway Authentication
-        if: success()
+        if: ${{ success() && env.FLYWAY_AUTH_DISABLED != 'true' }}
         run: |
          flyway auth -IAgreeToTheEula -email="${{ env.FLYWAY_EMAIL }}" -token="${{ env.FLYWAY_TOKEN }}"
       # Step 2 - Create Check Report
@@ -229,7 +232,7 @@ jobs:
           }
        # Step 1 - Flyway License Authentication #
       - name: Flyway Authentication
-        if: success() 
+        if: ${{ success() && env.FLYWAY_AUTH_DISABLED != 'true' }}
         run: |
          flyway auth -IAgreeToTheEula -email="${{ env.FLYWAY_EMAIL }}" -token="${{ env.FLYWAY_TOKEN }}"
       # Step 2 - Create Check Report 
