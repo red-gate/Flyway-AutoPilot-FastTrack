@@ -3,7 +3,14 @@ CREATE PROCEDURE Inventory.GetUpcomingFlights
     @EndDate DATETIME
 AS
 BEGIN
-    SELECT *
+    SELECT FlightID,
+           Airline,
+           DepartureCity,
+           ArrivalCity,
+           DepartureTime,
+           ArrivalTime,
+           Price,
+           AvailableSeats
     FROM Inventory.Flight
     WHERE DepartureTime BETWEEN @StartDate AND @EndDate;
 END;
