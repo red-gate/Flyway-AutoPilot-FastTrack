@@ -156,7 +156,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with: 
           name: flyway-reports-test
-          path: ${{ GITHUB.WORKSPACE }}/reports/**/*     
+          path: ${{ GITHUB.WORKSPACE }}/reports/${{ env.DATABASE_NAME }}-Run-${{ GITHUB.RUN_ID }}-${{ env.ENVIRONMENT }}-Check-Report.html    
       # Step 4 - Deploy pending migrations to target database
       - name: Migrate Test DB
         if: success()
@@ -210,7 +210,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with: 
           name: flyway-reports-prod
-          path: ${{ GITHUB.WORKSPACE }}/reports/**/*
+          path: ${{ GITHUB.WORKSPACE }}/reports/${{ env.DATABASE_NAME }}-Run-${{ GITHUB.RUN_ID }}-${{ env.ENVIRONMENT }}-Check-Report.html
       # Step 4 - Deploy pending migrations to target database
       - name: Migrate Production DB
         if: success()
