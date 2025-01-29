@@ -16,6 +16,7 @@ trigger: none
 # "FLYWAY_EMAIL" - Email linked to the Redgate account that created the PAT.
 # "FLYWAY_TOKEN" - PAT value (treat like a password; use secure variables or a Library Group).
 # "AGENT_POOL" - The name of the agent pool to be used throughout the pipeline
+# "FLYWAY_AUTH_DISABLED" (Optional) - Create and set to true to skip the auth check stage
 ### End of Global Stage Variable Group ###
 
 ### Build Stage Variables - Create 'AutoPilotBuild' Variable Group ###
@@ -125,7 +126,7 @@ stages:
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           displayName: 'Flyway Authentication'
-          condition: eq(variables['EXECUTE_BUILD'], true)
+          condition: and(succeeded(), eq(variables['EXECUTE_BUILD'], true), ne(variables['FLYWAY_AUTH_DISABLED'], true))
           env:
             FLYWAY_EMAIL: $(FLYWAY_EMAIL)
             FLYWAY_TOKEN: $(FLYWAY_TOKEN)
@@ -240,7 +241,7 @@ stages:
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           displayName: 'Flyway Authentication'
-          condition: and(succeeded(), eq(variables['generateReport'], true))
+          condition: and(succeeded(), eq(variables['generateReport'], true), ne(variables['FLYWAY_AUTH_DISABLED'], true))
           env:
             FLYWAY_EMAIL: $(FLYWAY_EMAIL)
             FLYWAY_TOKEN: $(FLYWAY_TOKEN)
@@ -313,7 +314,7 @@ stages:
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           displayName: 'Flyway Authentication'
-          condition: succeeded()
+          condition: and(succeeded(), ne(variables['FLYWAY_AUTH_DISABLED'], true))
           env:
             FLYWAY_EMAIL: $(FLYWAY_EMAIL)
             FLYWAY_TOKEN: $(FLYWAY_TOKEN)
@@ -388,7 +389,7 @@ stages:
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           displayName: 'Flyway Authentication'
-          condition: and(succeeded(), eq(variables['generateReport'], true))
+          condition: and(succeeded(), eq(variables['generateReport'], true), ne(variables['FLYWAY_AUTH_DISABLED'], true))
           env:
             FLYWAY_EMAIL: $(FLYWAY_EMAIL)
             FLYWAY_TOKEN: $(FLYWAY_TOKEN)
@@ -459,7 +460,7 @@ stages:
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           displayName: 'Flyway Authentication'
-          condition: succeeded()
+          condition: and(succeeded(), ne(variables['FLYWAY_AUTH_DISABLED'], true))
           env:
             FLYWAY_EMAIL: $(FLYWAY_EMAIL)
             FLYWAY_TOKEN: $(FLYWAY_TOKEN)
