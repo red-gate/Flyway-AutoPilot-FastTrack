@@ -119,7 +119,7 @@ stages:
             FLYWAY_TOKEN: $(FLYWAY_TOKEN)
         # Step 2 - Ensure the Build Database is cleaned of all objects, meaning the build starts from scratch
         - script: |
-            flyway info clean info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations" $(CUSTOM_PARAMETERS)
+            flyway info clean info -environment="$(TARGET_ENVIRONMENT)" -user="$(TARGET_DATABASE_USERNAME)" -password="$(TARGET_DATABASE_PASSWORD)" -configFiles="$(WORKING_DIRECTORY)/flyway.toml" -locations="filesystem:$(WORKING_DIRECTORY)/migrations" "-environments.$(TARGET_ENVIRONMENT).provisioner=clean" $(CUSTOM_PARAMETERS)
           continueOnError: false
           workingDirectory: '$(WORKING_DIRECTORY)'
           displayName: 'Clean Build DB'
