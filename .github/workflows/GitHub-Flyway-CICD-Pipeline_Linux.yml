@@ -3,12 +3,13 @@
 name: GitHub-Flyway-AutoPilot-Pipeline-Linux
 
 on:
-  pull_request:
-    branches:
-      - release
+  # pull_request:
+  #   branches:
+  #     - release
  
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+  workflow_call:  # This enables the workflow to be called from other workflows
 env:
 
   # Enable this for additional debug logging
