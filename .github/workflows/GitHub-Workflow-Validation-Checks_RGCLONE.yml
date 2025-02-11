@@ -1,0 +1,118 @@
+name: GitHub - Pipeline Validation Workflow
+
+on:
+  workflow_dispatch:  # Allows manual triggering
+  pull_request:
+    branches:
+      - release  # Triggers on PRs to release
+      - 'feature/*'  # Triggers on PRs to any feature branch
+  #schedule:
+    #- cron: "0 3 * * *"  # Runs at 3 AM UTC
+    
+jobs:
+  setup-validation-environment:
+    name: Spin Up RGClone Validation Container
+    runs-on: "self-hosted"
+    env:
+      DATA_IMAGE_NAME: "Autopilot-Flyway-MSSQL"
+      DATA_CONTAINER_NAME: "Autopilot-GitHub-Actions-Build-Validate_MSSQL-${{ github.run_number }}"
+      PROXY_PORT: "1433"
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install rgclone CLI
+        id: installCLI
+        env:
+          RGCLONE_API_ENDPOINT: ${{ secrets.RGCLONE_API_ENDPOINT }}
+          RGCLONE_ACCESS_TOKEN: ${{ secrets.RGCLONE_ACCESS_TOKEN }}
+        run: |
+          # Check if rgclone is already installed
+          if command -v rgclone &> /dev/null; then
+            echo "rgclone is already installed. Skipping installation."
+            rgclone version
+            exit 0
+          fi
+      
+          echo "rgclone not found. Installing..."
+      
+          # Define install location
+          INSTALL_DIR="/usr/local/bin"
+          TEMP_DIR=$(mktemp -d)
+      
+          # Download and extract rgclone
+          curl $RGCLONE_API_ENDPOINT/cloning-api/download/cli/linux-amd64 | tar xz -C "$TEMP_DIR"
+      
+          # Move rgclone to the install directory
+          sudo mv "$TEMP_DIR/rgclone" "$INSTALL_DIR/"
+          sudo chmod +x "$INSTALL_DIR/rgclone"
+      
+          # Verify installation
+          echo "rgclone installed successfully."
+          rgclone version
+
+      - name: Validate Data Image
+        id: createDataImage
+        env:
+          RGCLONE_API_ENDPOINT: ${{ secrets.RGCLONE_API_ENDPOINT }}
+          RGCLONE_ACCESS_TOKEN: ${{ secrets.RGCLONE_ACCESS_TOKEN }}
+        run: |
+          output=$(rgclone get di "$DATA_IMAGE_NAME" --ignore-not-found -o json)
+
+          if [[ -z "$output" ]]; then
+              echo "Image does not exist. Creating image..."
+              rgclone create data-image -f /home/flywayap/rgclone/yaml/AutoPilot_MSSQL-databases-from-script.yaml
+          else
+              echo "Image already exists. Moving on..."
+          fi
+
+      - name: Create data container
+        id: createDc
+        env:
+          RGCLONE_API_ENDPOINT: ${{ secrets.RGCLONE_API_ENDPOINT }}
+          RGCLONE_ACCESS_TOKEN: ${{ secrets.RGCLONE_ACCESS_TOKEN }}
+        run: |
+          # Spin up a Data Container for chosen Image
+          echo "Check if Data Container Already Exists"
+          
+          if ! rgclone get data-container "$DATA_CONTAINER_NAME" &> /dev/null ; then
+            echo "Creating container for $DATA_CONTAINER_NAME"
+            output=$(rgclone create dc -n "$DATA_CONTAINER_NAME" -i "$DATA_IMAGE_NAME" -t 20m -o json)
+          fi
+          
+          # Parse JSON output using jq
+          dbUser=$(echo "$output" | jq -r '.user')
+          dbPassword=$(echo "$output" | jq -r '.password')
+          sqlhost=$(echo "$output" | jq -r '.host')
+          sqlport=$(echo "$output" | jq -r '.port')
+          instance="${sqlhost},${sqlport}"
+      
+          echo "Data container created successfully and available at: $instance"
+      
+          # Set output values for use in subsequent steps
+          echo "dbUser=$dbUser" >> "$GITHUB_ENV"
+          echo "dbPassword=$dbPassword" >> "$GITHUB_ENV"
+          echo "instance=$instance" >> "$GITHUB_ENV"
+        
+      - name: Create Local Proxy for Container
+        id: createProxy
+        env:
+          RGCLONE_API_ENDPOINT: ${{ secrets.RGCLONE_API_ENDPOINT }}
+          RGCLONE_ACCESS_TOKEN: ${{ secrets.RGCLONE_ACCESS_TOKEN }}
+        run: |
+          # Kill any pending RGClone processes
+          echo "Killing any pending RGClone processes"
+          pkill -f rgclone || true  # the `|| true` ensures the script doesn't fail if no process is found
+
+          # Create Data Container Proxy
+          echo "Creating Data Container Proxy"
+          RUNNER_TRACKING_ID="" && rgclone proxy dc "$DATA_CONTAINER_NAME" -p "$PROXY_PORT" &  # Run the proxy in the background
+
+          echo "RGClone Proxy Enabled"
+
+  Validate-Flyway-Pipeline:
+    name: Run Flyway Pipeline
+    needs: setup-validation-environment
+    uses: ./.github/workflows/GitHub-Flyway-CICD-Pipeline_Linux.yml
+    secrets: inherit  # Inherit existing secrets but allow environment overrides
+
