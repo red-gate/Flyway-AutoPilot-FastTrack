@@ -1,13 +1,13 @@
 name: GitHub - Pipeline Validation Workflow
 
 on:
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+  workflow_dispatch:  # Allows manual triggering
   pull_request:
     branches:
-      - release
-  schedule:
-    - cron: "0 3 * * *"  # Runs at 3 AM UTC every night
+      - release  # Triggers on PRs to release
+      - 'feature/*'  # Triggers on PRs to any feature branch
+  #schedule:
+    #- cron: "0 3 * * *"  # Runs at 3 AM UTC
     
 jobs:
   setup-validation-environment:
