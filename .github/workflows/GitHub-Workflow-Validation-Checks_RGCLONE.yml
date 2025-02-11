@@ -61,6 +61,7 @@ jobs:
 
           if [[ -z "$output" ]]; then
               echo "Image does not exist. Creating image..."
+              rgclone create data-image -f /home/flywayap/rgclone/yaml/AutoPilot_MSSQL-databases-from-script.yaml
           else
               echo "Image already exists. Moving on..."
           fi
