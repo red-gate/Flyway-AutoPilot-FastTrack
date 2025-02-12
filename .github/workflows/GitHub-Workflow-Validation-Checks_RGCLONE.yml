@@ -108,7 +108,7 @@ jobs:
           echo "Creating Data Container Proxy"
           RUNNER_TRACKING_ID="" && rgclone proxy dc "$DATA_CONTAINER_NAME" -p "$PROXY_PORT" &  # Run the proxy in the background
 
-          echo "RGClone Proxy Enabled"
+          echo "RGClone Proxy Enabled"   
 
   Validate-Flyway-Pipeline:
     name: Run Flyway Pipeline
@@ -116,3 +116,33 @@ jobs:
     uses: ./.github/workflows/GitHub-Flyway-CICD-Pipeline_Linux.yml
     secrets: inherit  # Inherit existing secrets but allow environment overrides
 
+  cleanup:
+    name: Clean-up Container
+    runs-on: "self-hosted"
+    needs: Validate-Flyway-Pipeline  # This ensures cleanup runs after the validation pipeline job
+    if: always()  # Ensures this job runs even if Validate-Flyway-Pipeline fails
+    steps:
+      - name: Clean-up Containers
+        run: |
+          echo "Cleaning up containers"
+          # Validate if container exists
+          echo "Check if Data Container Already Exists"
+          
+          if rgclone get data-container "$DATA_CONTAINER_NAME" &> /dev/null ; then
+            echo "Deleting container for $DATA_CONTAINER_NAME"
+            rgclone delete dc -n "$DATA_CONTAINER_NAME"
+          fi
+  # This step will check if all jobs have complete and if any fail, the whole workflow will be rerun ONCE. This is required for reasons such as multiple PRs running at the same time.
+  retry-jobs:
+    name: Retry if Any Job Fails
+    runs-on: "self-hosted"
+    needs: [setup-validation-environment, Validate-Flyway-Pipeline, cleanup]
+    if: failure()  # Retry the jobs if any of them failed
+    strategy:
+      fail-fast: false
+      matrix:
+        job: [setup-validation-environment, Validate-Flyway-Pipeline, cleanup]
+    steps:
+      - name: Retry Logic for Failed Jobs
+        run: |
+          echo "Retrying failed jobs..."
