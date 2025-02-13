@@ -5,10 +5,10 @@
 
 -- This script represents the initial capture of static data in the Customers.LoyaltyProgram table.
 
-INSERT INTO Customers.LoyaltyProgram (ProgramID, ProgramName, RewardPointsRequired)
+INSERT INTO Customers.LoyaltyProgram (ProgramName, PointsMultiplier)
 VALUES
-    (1, 'Gold', 1000),
-    (2, 'Silver', 500),
-    (3, 'Bronze', 250);
+    ('Silver', '1.00'),
+    ('Gold', '1.50'),
+    ('Platinum', '2.00');
 
 -- End of Script
