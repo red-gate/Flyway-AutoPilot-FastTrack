@@ -21,7 +21,7 @@ env:
   # FLYWAY_EMAIL: Enter the email address linked to the Redgate Account that created the PAT
   # FLYWAY_TOKEN: Enter the PAT Value (This should be treated like a password and thus as a secure variable.
   # FLYWAY_AUTH_DISABLED: (Optional) - Create and set to true to skip the auth check stage
-  # "FLYWAY_CLI_INSTALL_CHECK"  (Optional) - Default is empty (Or false): Set as 'true' to enable a Flyway CLI validate and Install step
+  # FLYWAY_CLI_INSTALL  (Optional) - Default is empty (Or false): Set as 'true' to enable a Flyway CLI validate and Install step
   # TARGET_DATABASE_USERNAME: Leave blank if using integratedSecurity (default).
   # TARGET_DATABASE_PASSWORD: Leave blank if using integratedSecurity (default).
   # CUSTOM_PARAMS: Optional - Used for passing custom Flyway Parameters to each Flyway command
@@ -39,7 +39,7 @@ env:
   FIRST_UNDO_SCRIPT: "002" # This should match the first undo version in your project
 
   # Optional: Validate Flyway CLI installation for ephemeral agents.
-  FLYWAY_CLI_INSTALL_CHECK: "${{ secrets.FLYWAY_CLI_INSTALL_CHECK }}" # Setting to false will skip the Flyway CLI check step
+  FLYWAY_CLI_INSTALL_CHECK: "${{ secrets.FLYWAY_CLI_INSTALL }}" # Setting to false will skip the Flyway CLI check step
   FLYWAY_VERSION: "Latest" # This outlines the version of Flyway CLI that will be downloaded if no Flyway CLI is detected on the target agent (Examples - '11.0.0' for specific version. Or 'Latest' for latest version)
   FLYWAY_INSTALL_DIRECTORY: "C:\\FlywayCLI\\" # The path on the agent machine where Flyway CLI will be installed  
 
