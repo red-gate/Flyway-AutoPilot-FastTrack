@@ -7,7 +7,7 @@ on:
       - release  # Triggers on PRs to release
       - 'feature/*'  # Triggers on PRs to any feature branch
   schedule:
-    - cron: "0 3 * * *"  # Runs at 3 AM UTC
+    - cron: "0 2 * * *"  # Runs at 3 AM UTC
 
  ### Step 1: Define Repository Secrets ###
  ### Environment Secrets - Create Environment Secrets ###
