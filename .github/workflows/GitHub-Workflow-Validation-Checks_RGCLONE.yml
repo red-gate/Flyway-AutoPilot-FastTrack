@@ -6,8 +6,8 @@ on:
     branches:
       - release  # Triggers on PRs to release
       - 'feature/*'  # Triggers on PRs to any feature branch
-  #schedule:
-    #- cron: "0 3 * * *"  # Runs at 3 AM UTC
+  schedule:
+    - cron: "0 3 * * *"  # Runs at 3 AM UTC
 
  ### Step 1: Define Repository Secrets ###
  ### Environment Secrets - Create Environment Secrets ###
@@ -24,6 +24,7 @@ on:
     
 jobs:
   setup-validation-environment:
+    if: github.repository_owner == 'RG-AutoPilot'  # Only runs if the repo is in a specific organisation
     name: Spin Up RGClone Validation Container
     runs-on: "self-hosted"
     env:
@@ -132,6 +133,7 @@ jobs:
           RUNNER_TRACKING_ID="" && rgclone proxy dc "$DATA_CONTAINER_NAME" -p "$PROXY_PORT" &  # Run the proxy in the background
 
   Validate-Flyway-Pipeline:
+    if: github.repository_owner == 'RG-AutoPilot'  # Only runs if the repo is in a specific organisation
     name: Run Flyway Pipeline
     needs: setup-validation-environment
     uses: ./.github/workflows/GitHub-Flyway-CICD-Pipeline_Linux.yml
@@ -141,7 +143,7 @@ jobs:
     name: Clean-up Container
     runs-on: "self-hosted"
     needs: Validate-Flyway-Pipeline  # This ensures cleanup runs after the validation pipeline job
-    if: always()  # Ensures this job runs even if Validate-Flyway-Pipeline fails
+    if: always() && github.repository_owner == 'RG-AutoPilot' # Ensures this job runs even if Validate-Flyway-Pipeline fails
     steps:
       - name: Clean-up Containers
         run: |
@@ -158,7 +160,7 @@ jobs:
     name: Retry Entire Workflow If Any Job Fails
     runs-on: "self-hosted"
     needs: [setup-validation-environment, Validate-Flyway-Pipeline, cleanup]
-    if: failure()  # Triggers only if any previous job failed
+    if: failure() && github.repository_owner == 'RG-AutoPilot' # Triggers only if any previous job failed
     steps:
       - name: Trigger Workflow Again
         run: |
