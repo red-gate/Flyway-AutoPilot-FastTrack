@@ -6,17 +6,31 @@ on:
     branches:
       - release  # Triggers on PRs to release
       - 'feature/*'  # Triggers on PRs to any feature branch
-  #schedule:
-    #- cron: "0 3 * * *"  # Runs at 3 AM UTC
+  schedule:
+    - cron: "0 2 * * *"  # Runs at 3 AM UTC
+
+ ### Step 1: Define Repository Secrets ###
+ ### Environment Secrets - Create Environment Secrets ###
+ ### Navigate to Settings > Secrets & Variables > Actions
+ # RGCLONE_API_ENDPOINT: Enter the RGClone API Endpoint Address
+ # RGCLONE_ACCESS_TOKEN: Enter the Access Token for connecting to the above endpoint
+ ### Step 2: Define REpository Variables ###
+ ### Environment Secrets - Create Environment Secrets ###
+ ### Navigate to Settings > Secrets & Variables > Actions
+ # RGCLONE_IMAGE_NAME: Enter the name of the RGClone Image to be used
+ # RGCLONE_CONTAINER_NAME: Enter the name of the container to be created
+ # RGCLONE_PROXY_PORT: Enter the local port number to be used by the proxy command
+### End of Environment Variables ###
     
 jobs:
   setup-validation-environment:
+    if: github.repository_owner == 'RG-AutoPilot'  # Only runs if the repo is in a specific organisation
     name: Spin Up RGClone Validation Container
     runs-on: "self-hosted"
     env:
-      DATA_IMAGE_NAME: "Autopilot-Flyway-MSSQL"
-      DATA_CONTAINER_NAME: "Autopilot-GitHub-Actions-Build-Validate_MSSQL-${{ github.run_number }}"
-      PROXY_PORT: "1433"
+      DATA_IMAGE_NAME: "${{ vars.RGCLONE_IMAGE_NAME }}"
+      DATA_CONTAINER_NAME: "${{ vars.RGCLONE_CONTAINER_NAME }}-${{ github.run_number }}"
+      PROXY_PORT: "${{ vars.RGCLONE_PROXY_PORT }}"
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -100,17 +114,26 @@ jobs:
           RGCLONE_API_ENDPOINT: ${{ secrets.RGCLONE_API_ENDPOINT }}
           RGCLONE_ACCESS_TOKEN: ${{ secrets.RGCLONE_ACCESS_TOKEN }}
         run: |
-          # Kill any pending RGClone processes
-          echo "Killing any pending RGClone processes"
-          pkill -f rgclone || true  # the `|| true` ensures the script doesn't fail if no process is found
+          echo "Checking if port $PROXY_PORT is in use..."
 
-          # Create Data Container Proxy
-          echo "Creating Data Container Proxy"
+          # Check if any process is listening on the specified port
+          if lsof -i :$PROXY_PORT &>/dev/null; then
+            echo "Port $PROXY_PORT is in use. Killing the active process..."
+            
+            # Get the PID of the process using the port and kill it
+            PID=$(lsof -ti :$PROXY_PORT)
+            kill -9 $PID
+            echo "Process $PID using port $PROXY_PORT has been terminated."
+          else
+            echo "Port $PROXY_PORT is free. No existing process found."
+          fi
+
+          # Start the new RGClone proxy
+          echo "Starting new RGClone Proxy on port $PROXY_PORT"
           RUNNER_TRACKING_ID="" && rgclone proxy dc "$DATA_CONTAINER_NAME" -p "$PROXY_PORT" &  # Run the proxy in the background
 
-          echo "RGClone Proxy Enabled"   
-
   Validate-Flyway-Pipeline:
+    if: github.repository_owner == 'RG-AutoPilot'  # Only runs if the repo is in a specific organisation
     name: Run Flyway Pipeline
     needs: setup-validation-environment
     uses: ./.github/workflows/GitHub-Flyway-CICD-Pipeline_Linux.yml
@@ -120,7 +143,7 @@ jobs:
     name: Clean-up Container
     runs-on: "self-hosted"
     needs: Validate-Flyway-Pipeline  # This ensures cleanup runs after the validation pipeline job
-    if: always()  # Ensures this job runs even if Validate-Flyway-Pipeline fails
+    if: always() && github.repository_owner == 'RG-AutoPilot' # Ensures this job runs even if Validate-Flyway-Pipeline fails
     steps:
       - name: Clean-up Containers
         run: |
@@ -133,16 +156,13 @@ jobs:
             rgclone delete dc -n "$DATA_CONTAINER_NAME"
           fi
   # This step will check if all jobs have complete and if any fail, the whole workflow will be rerun ONCE. This is required for reasons such as multiple PRs running at the same time.
-  retry-jobs:
-    name: Retry if Any Job Fails
+  retry-workflow:
+    name: Retry Entire Workflow If Any Job Fails
     runs-on: "self-hosted"
     needs: [setup-validation-environment, Validate-Flyway-Pipeline, cleanup]
-    if: failure()  # Retry the jobs if any of them failed
-    strategy:
-      fail-fast: false
-      matrix:
-        job: [setup-validation-environment, Validate-Flyway-Pipeline, cleanup]
+    if: failure() && github.repository_owner == 'RG-AutoPilot' # Triggers only if any previous job failed
     steps:
-      - name: Retry Logic for Failed Jobs
+      - name: Trigger Workflow Again
         run: |
-          echo "Retrying failed jobs..."
+          echo "Retrying workflow due to failure..."
+          gh workflow run "${{ github.workflow }}" -f run_id="${{ github.run_id }}"
