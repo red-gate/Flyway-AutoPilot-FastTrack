@@ -113,15 +113,23 @@ jobs:
           RGCLONE_API_ENDPOINT: ${{ secrets.RGCLONE_API_ENDPOINT }}
           RGCLONE_ACCESS_TOKEN: ${{ secrets.RGCLONE_ACCESS_TOKEN }}
         run: |
-          # Kill any pending RGClone processes
-          echo "Killing any pending RGClone processes"
-          pkill -f rgclone || true  # the `|| true` ensures the script doesn't fail if no process is found
+          echo "Checking if port $PROXY_PORT is in use..."
 
-          # Create Data Container Proxy
-          echo "Creating Data Container Proxy"
+          # Check if any process is listening on the specified port
+          if lsof -i :$PROXY_PORT &>/dev/null; then
+            echo "Port $PROXY_PORT is in use. Killing the active process..."
+            
+            # Get the PID of the process using the port and kill it
+            PID=$(lsof -ti :$PROXY_PORT)
+            kill -9 $PID
+            echo "Process $PID using port $PROXY_PORT has been terminated."
+          else
+            echo "Port $PROXY_PORT is free. No existing process found."
+          fi
+
+          # Start the new RGClone proxy
+          echo "Starting new RGClone Proxy on port $PROXY_PORT"
           RUNNER_TRACKING_ID="" && rgclone proxy dc "$DATA_CONTAINER_NAME" -p "$PROXY_PORT" &  # Run the proxy in the background
-
-          echo "RGClone Proxy Enabled"   
 
   Validate-Flyway-Pipeline:
     name: Run Flyway Pipeline
