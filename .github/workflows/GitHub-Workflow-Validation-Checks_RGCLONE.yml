@@ -163,6 +163,8 @@ jobs:
     if: failure() && github.repository_owner == 'RG-AutoPilot' # Triggers only if any previous job failed
     steps:
       - name: Trigger Workflow Again
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
         run: |
           echo "Retrying workflow due to failure..."
           gh workflow run "${{ github.workflow }}" -f run_id="${{ github.run_id }}"
