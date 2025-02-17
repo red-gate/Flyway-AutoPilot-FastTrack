@@ -1,7 +1,9 @@
-name: GitHub - Pipeline Validation Workflow
+name: GitHub - FastTrack Pipeline Validation Workflow
 
 on:
   workflow_dispatch:  # Allows manual triggering
+  repository_dispatch:
+    types: [trigger-validation]  # Listens for dispatch events, which can trigger this workflow automatically on regular schedules
   pull_request:
     branches:
       - release  # Triggers on PRs to release
