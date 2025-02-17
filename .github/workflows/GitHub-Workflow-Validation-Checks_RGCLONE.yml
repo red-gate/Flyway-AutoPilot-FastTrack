@@ -1,13 +1,15 @@
-name: GitHub - Pipeline Validation Workflow
+name: GitHub - FastTrack Pipeline Validation Workflow
 
 on:
   workflow_dispatch:  # Allows manual triggering
+  repository_dispatch:
+    types: [trigger-validation]  # Listens for dispatch events, which can trigger this workflow automatically on regular schedules
   pull_request:
     branches:
       - release  # Triggers on PRs to release
       - 'feature/*'  # Triggers on PRs to any feature branch
-  schedule:
-    - cron: "0 2 * * *"  # Runs at 3 AM UTC
+  # schedule:
+  #   - cron: "0 2 * * *"  # Runs at 3 AM UTC
 
  ### Step 1: Define Repository Secrets ###
  ### Environment Secrets - Create Environment Secrets ###
