@@ -6,7 +6,8 @@ CREATE TABLE [Customers].[Customer]
 [Email] [nvarchar] (100) NOT NULL,
 [DateOfBirth] [date] NULL,
 [Phone] [nvarchar] (20) NULL,
-[Address] [nvarchar] (200) NULL
+[Address] [nvarchar] (200) NULL,
+[CustomerUserID] [int] NULL
 )
 GO
 ALTER TABLE [Customers].[Customer] ADD PRIMARY KEY CLUSTERED ([CustomerID])

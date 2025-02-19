@@ -37,17 +37,22 @@ validateMigrationNaming = true
 defaultSchema = "dbo"
 baselineOnMigrate = true
 baselineVersion = "001"
-errorOverrides = ["S0001:0:I-"]
-sqlserver.clean.mode = "all"
-sqlserver.clean.schemas.exclude = ["ExampleSchema1", "ExampleSchema2"] 
+errorOverrides = [ "S0001:0:I-" ]
+
+[flyway.sqlserver.clean]
+mode = "all"
+
+  [flyway.sqlserver.clean.schemas]
+  exclude = [ "ExampleSchema1", "ExampleSchema2" ]
 
 [flywayDesktop]
 developmentEnvironment = "development"
 shadowEnvironment = "shadow"
 schemaModel = "./schema-model"
+enableMigrations = false
 
-[flywayDesktop.generate]
-undoScripts = true
+  [flywayDesktop.generate]
+  undoScripts = true
 
 [redgateCompare.sqlserver]
 filterFile = "Filter.scpf"
