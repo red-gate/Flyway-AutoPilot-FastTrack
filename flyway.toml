@@ -3,30 +3,29 @@ name = "AutoPilot - FastTrack"
 databaseType = "SqlServer"
 
 [environments.development]
-url = "jdbc:sqlserver://localhost;databaseName=AutoPilotDev;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
-schemas = [ ]
+url = "jdbc:sqlserver://localhost;authentication=sqlPassword;databaseName=AutoPilotDev;encrypt=true;trustServerCertificate=true"
 displayName = "Development database"
 
 [environments.shadow]
-url = "jdbc:sqlserver://localhost;databaseName=AutoPilotShadow;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;authentication=sqlPassword;databaseName=AutoPilotShadow;encrypt=true;trustServerCertificate=true"
 displayName = "Shadow database"
 provisioner = "clean"
 
 [environments.Prod]
-url = "jdbc:sqlserver://localhost;databaseName=AutoPilotProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutoPilotProd;encrypt=true;authentication=sqlPassword;trustServerCertificate=true"
 displayName = "Production Database"
 
 [environments.Test]
-url = "jdbc:sqlserver://localhost;databaseName=AutoPilotTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutoPilotTest;encrypt=true;authentication=sqlPassword;trustServerCertificate=true"
 displayName = "Test database"
 
 [environments.Check]
-url = "jdbc:sqlserver://localhost;databaseName=AutoPilotCheck;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutoPilotCheck;encrypt=true;authentication=sqlPassword;trustServerCertificate=true"
 displayName = "Check (Reporting) database"
 provisioner = "clean"
 
 [environments.Build]
-url = "jdbc:sqlserver://localhost;databaseName=AutoPilotBuild;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutoPilotBuild;encrypt=true;iauthentication=sqlPassword;trustServerCertificate=true"
 displayName = "Build database"
 
 [flyway]
@@ -37,17 +36,21 @@ validateMigrationNaming = true
 defaultSchema = "dbo"
 baselineOnMigrate = true
 baselineVersion = "001"
-errorOverrides = ["S0001:0:I-"]
-sqlserver.clean.mode = "all"
-sqlserver.clean.schemas.exclude = ["ExampleSchema1", "ExampleSchema2"] 
+errorOverrides = [ "S0001:0:I-" ]
+
+[flyway.sqlserver.clean]
+mode = "all"
+
+  [flyway.sqlserver.clean.schemas]
+  exclude = [ "ExampleSchema1", "ExampleSchema2" ]
 
 [flywayDesktop]
 developmentEnvironment = "development"
 shadowEnvironment = "shadow"
 schemaModel = "./schema-model"
 
-[flywayDesktop.generate]
-undoScripts = true
+  [flywayDesktop.generate]
+  undoScripts = true
 
 [redgateCompare.sqlserver]
 filterFile = "Filter.scpf"
