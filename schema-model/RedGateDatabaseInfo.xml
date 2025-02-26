@@ -5,10 +5,10 @@
   <DefaultSchema>dbo</DefaultSchema>
   <DefaultUser>dbo</DefaultUser>
   <DefaultFilegroup>PRIMARY</DefaultFilegroup>
-  <DatabaseVersion>13</DatabaseVersion>
-  <ServerVersion>13.0</ServerVersion>
-  <CompatibilityLevel>130</CompatibilityLevel>
-  <EngineEdition>Enterprise</EngineEdition>
+  <DatabaseVersion>15</DatabaseVersion>
+  <ServerVersion>15.0</ServerVersion>
+  <CompatibilityLevel>150</CompatibilityLevel>
+  <EngineEdition>9</EngineEdition>
   <IsAzure>False</IsAzure>
   <ScriptFolderType>Default</ScriptFolderType>
   <MaxDataFileSize>10485760</MaxDataFileSize>
