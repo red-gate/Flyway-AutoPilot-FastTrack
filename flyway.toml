@@ -29,6 +29,7 @@ provisioner = "clean"
 [environments.Build]
 url = "jdbc:sqlserver://localhost;databaseName=AutoPilotBuild;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 displayName = "Build database"
+provisioner = "clean"
 
 [flyway]
 locations = [ "filesystem:migrations" ]
