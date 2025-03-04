@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 # Flyway Version to Use (Check for latest version: https://documentation.red-gate.com/flyway/reference/usage/command-line)
-if ($null -ne ${env:FLYWAY_VERSION}) {
+if (-not [string]::IsNullOrWhiteSpace($env:FLYWAY_VERSION)) {
   # Environment Variables - Use these if set as a variable - Target Database Connection Details
   Write-Output "Using Environment Variables for Flyway CLI Version Number"
   $flywayVersion = "${env:FLYWAY_VERSION}"
@@ -12,7 +12,7 @@ if ($null -ne ${env:FLYWAY_VERSION}) {
 }
 
 # Flyway Download Location Check
-if ($null -ne ${env:FLYWAY_INSTALL_DIRECTORY}) {
+if (-not [string]::IsNullOrWhiteSpace($env:FLYWAY_INSTALL_DIRECTORY)) {
     # Environment Variables - Use these if set as a variable - Target Database Connection Details
     Write-Output "Using Environment Variables for Flyway CLI Install Directory"
     $flywayInstallDirectory = "${env:FLYWAY_INSTALL_DIRECTORY}"
@@ -23,7 +23,7 @@ if ($null -ne ${env:FLYWAY_INSTALL_DIRECTORY}) {
 }
 
 # Flyway PATH Location Check
-if ($null -ne ${env:FLYWAY_PATH_LOCATION}) {
+if (-not [string]::IsNullOrWhiteSpace($env:FLYWAY_PATH_LOCATION)) {
     # Environment Variables - Use these if set as a variable - PATH Location (User or Machine)
     # Using Machine will require administrative permissions to the server
     Write-Output "Using Environment Variables for Flyway CLI PATH Location"
