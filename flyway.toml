@@ -2,6 +2,7 @@ id = "97ea357d-2613-4415-b434-775478105625"
 name = "AutoPilot - FastTrack"
 databaseType = "SqlServer"
 
+
 [environments.development]
 url = "jdbc:sqlserver://localhost;databaseName=AutoPilotDev;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 schemas = [ ]
@@ -28,6 +29,7 @@ provisioner = "clean"
 [environments.Build]
 url = "jdbc:sqlserver://localhost;databaseName=AutoPilotBuild;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 displayName = "Build database"
+provisioner = "clean"
 
 [flyway]
 locations = [ "filesystem:migrations" ]
