@@ -1,13 +1,13 @@
 # Quest 1: Fixing Broken Dependencies  
 
 ## Scenario  
-A recent schema update renamed the `Sales.Campaigns` table to `Sales.Promotions`, but dependent objects were not updated accordingly. As a result, the stored procedure `Sales.GetActiveCampaigns` is now broken.
+A recent schema update renamed the `Sales.Campaigns` table to `Sales.Orders`, but dependent objects were not updated accordingly. As a result, the stored procedure `Sales.GetActiveCampaigns` is now broken.
 
 Your task is to **find and fix the broken dependency**, ensuring that the stored procedure references the correct table.
 
 ## Objective  
 - Locate the invalid stored procedure (`Sales.GetActiveCampaigns`).
-- Modify it to reference `Sales.Promotions` instead of `Sales.Campaigns`.
+- Modify it to reference `Sales.Orders` instead of `Sales.Campaigns`.
 - Capture the fix in Flyway Desktop and commit the change to source control.
 
 ## Steps  
