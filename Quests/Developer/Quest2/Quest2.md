@@ -1,3 +1,5 @@
+**RUN THE SQL SCRIPT FIRST TO CREATE THE NEEDED QUEST ITEMS**
+
 **Scenario**:
 You’ve been asked to store promotional campaigns in a new table under the `Sales` schema.
 

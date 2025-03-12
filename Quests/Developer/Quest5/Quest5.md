@@ -1,3 +1,5 @@
+**RUN THE SQL SCRIPT FIRST TO CREATE THE NEEDED QUEST ITEMS**
+
 **Scenario**:
 Your team has identified that the `Customers.LoyaltyProgram` table contains static configuration data that must be versioned and deployed alongside schema changes. To ensure consistency across environments, this static data will be captured using Flyway Desktop.
 

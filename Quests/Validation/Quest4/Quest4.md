@@ -1,3 +1,5 @@
+**RUN THE SQL SCRIPT FIRST TO CREATE THE NEEDED QUEST ITEMS**
+
 **Scenario**:
 You need Flyway to perform an additional operation AFTER the clean command is finished during the Build stage.
 

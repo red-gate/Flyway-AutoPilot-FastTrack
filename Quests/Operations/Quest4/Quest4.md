@@ -1,3 +1,5 @@
+**RUN THE SQL SCRIPT FIRST TO CREATE THE NEEDED QUEST ITEMS**
+
 **Scenario**:
 The `Inventory.MaintenanceLog` table is growing rapidly. To improve query performance and manageability, partition the table by year based on the `MaintenanceDate` column.
 

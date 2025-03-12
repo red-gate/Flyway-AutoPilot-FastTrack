@@ -1,3 +1,5 @@
+**RUN THE SQL SCRIPT FIRST TO CREATE THE NEEDED QUEST ITEMS**
+
 **Scenario**:
 You need a stored procedure to retrieve all upcoming flights within a specific date range, given `@StartDate` and `@EndDate` parameters.
 

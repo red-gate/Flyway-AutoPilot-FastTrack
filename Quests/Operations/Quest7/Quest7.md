@@ -1,3 +1,5 @@
+**RUN THE SQL SCRIPT FIRST TO CREATE THE NEEDED QUEST ITEMS**
+
 **Scenario**:
 In the `Inventory.FlightRoute` table, the combination of `DepartureCity` and `ArrivalCity` should always be unique, but currently, there is no enforcement of this rule.
 
