@@ -1,5 +1,13 @@
 # This is a best practice Flyway Enterprise workflow to help you get started with Azure DevOps and a Windows Runner
 
+# ===========================
+# Pipeline Name: AzureDevOps-Flyway-CICD-Pipeline_Windows.yml
+# Version: 1.0.0
+# Author: Redgate Software Ltd
+# Last Updated: 2025-03-17
+# Description: Azure DevOps YAML Pipeline for Windows Runners
+# ===========================
+
 name: Flyway-AutoPilot-Simple-Pipeline-Windows
 
 trigger: none
