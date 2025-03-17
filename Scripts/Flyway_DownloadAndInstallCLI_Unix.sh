@@ -1,5 +1,18 @@
 #!/bin/bash
 
+# ===========================
+# Script Name: Flyway_DownloadAndInstallCLI.sh
+# Version: 1.0.0
+# Author: Chris Hawkins (Redgate Software Ltd)
+# Last Updated: 2025-03-17
+# Description: Automated Flyway CLI Installation Script
+# ===========================
+
+SCRIPT_VERSION="1.0.0"
+
+echo "Running Flyway Installer Script - Version $SCRIPT_VERSION"
+
+
 # Check if FLYWAY_VERSION is set as an environment variable
 if [ -z "$FLYWAY_VERSION" ]; then
   # If not set, assign a default value to a local variable
