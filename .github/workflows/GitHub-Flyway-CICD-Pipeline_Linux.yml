@@ -5,7 +5,7 @@
 # Version: 1.0.0
 # Author: Redgate Software Ltd
 # Last Updated: 2025-03-17
-# Description: Azure DevOps YAML Pipeline for Linux Runners
+# Description: GitHub DevOps YAML Pipeline for Linux Runners
 # ===========================
  
 name: GitHub-Flyway-AutoPilot-Pipeline-Linux
