@@ -1,5 +1,13 @@
 # This is a best practice Flyway Enterprise workflow to help you get started with Azure DevOps and a Linux Runner
 
+# ===========================
+# Pipeline Name: AzureDevOps-Flyway-CICD-Pipeline_Linux.yml
+# Version: 1.0.0
+# Author: Redgate Software Ltd
+# Last Updated: 2025-03-17
+# Description: Azure DevOps YAML Pipeline for Linux Runners
+# ===========================
+
 name: Flyway-AutoPilot-Simple-Pipeline-Linux
 
 trigger: none
