@@ -1,5 +1,12 @@
-name: GitHub - FastTrack Pipeline Validation Workflow
+# ===========================
+# Pipeline Name: GitHub-Workflow-Validation-Checks_RGCLONE.yml
+# Version: 1.0.0
+# Author: Chris Hawkins (Redgate Software Ltd)
+# Last Updated: 2025-03-17
+# Description: GitHub Pipeline Validation Workflow (Use Case - To validate all future changes to the Autopilot repository in an automated way)
+# ===========================
 
+name: GitHub - FastTrack Pipeline Validation Workflow
 on:
   workflow_dispatch:  # Allows manual triggering
   repository_dispatch:

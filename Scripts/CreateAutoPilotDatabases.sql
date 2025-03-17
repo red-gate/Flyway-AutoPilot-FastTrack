@@ -1,4 +1,10 @@
--- Flyway AutoPilot FastTrack Database Setup Script --
+-- ===========================
+-- Script Name: CreateAutopilotDatabases.sql
+-- Version: 1.0.0
+-- Author: Redgate Software Ltd
+-- Last Updated: 2025-03-17
+-- Description: Flyway Autopilot FastTrack Database Setup Script
+-- ===========================
 
 -- Drop AutoPilotDev database if it exists to ensure fresh setup
 IF DB_ID('AutoPilotDev') IS NOT NULL

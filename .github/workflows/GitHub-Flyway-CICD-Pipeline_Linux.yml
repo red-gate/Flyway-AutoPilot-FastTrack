@@ -1,4 +1,12 @@
 # This is a basic workflow to help you get started with GitHub Actions
+
+# ===========================
+# Pipeline Name: GitHub-Flyway-CICD-Pipeline_Linux.yml
+# Version: 1.0.0
+# Author: Redgate Software Ltd
+# Last Updated: 2025-03-17
+# Description: GitHub DevOps YAML Pipeline for Linux Runners
+# ===========================
  
 name: GitHub-Flyway-AutoPilot-Pipeline-Linux
 

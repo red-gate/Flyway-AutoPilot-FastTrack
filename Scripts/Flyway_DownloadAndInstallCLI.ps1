@@ -1,3 +1,15 @@
+# ===========================
+# Script Name: Flyway_DownloadAndInstallCLI.ps1
+# Version: 1.0.0
+# Author: Chris Hawkins (Redgate Software Ltd)
+# Last Updated: 2025-03-17
+# Description: Automated Flyway CLI Installation Script
+# ===========================
+
+$ScriptVersion = "1.0.0"
+
+Write-Host "Running Flyway Installer Script - Version $ScriptVersion"
+
 $ErrorActionPreference = "Stop"
 
 # Flyway Version to Use (Check for latest version: https://documentation.red-gate.com/flyway/reference/usage/command-line)
@@ -29,9 +41,9 @@ if (-not [string]::IsNullOrWhiteSpace($env:FLYWAY_PATH_LOCATION)) {
     Write-Output "Using Environment Variables for Flyway CLI PATH Location"
     $flywayPathLocation = "${env:FLYWAY_PATH_LOCATION}"
     } else {
-    Write-Output "Using Local Variables for Flyway CLI PATH Location"
     # Local Variables - If Env Variables Not Set - PATH Location (Defaulting to User)
     $flywayPathLocation = 'Machine'
+        Write-Output "Using Local Variable '$flywayPathLocation' for Flyway CLI PATH Location"
 }
 
 # Refresh PATH values for current session
@@ -69,8 +81,6 @@ if ($flywayVersion -ieq "latest") {
     Write-Output "Flyway Version Number Variable is not 'latest', Current Version to Install: $flywayVersion"
 }
 
-Write-Host "Using Flyway CLI version $flywayVersion"
-
 # Check if Flyway is already installed
 if (Get-Command flyway -ErrorAction SilentlyContinue) {
     Write-Host "Flyway Already Installed - Checking Current Version Number"
@@ -79,13 +89,14 @@ if (Get-Command flyway -ErrorAction SilentlyContinue) {
     $a = & "flyway" --version 2>&1 | Select-String 'Edition'
     $b = $a -split ' '
     $currentVersion = $b[3]
+    Write-Host "$($b) Currently Installed."
     
     if ($currentVersion -eq $flywayVersion) {
-        Write-Output "$($b) is already installed. No Changes Required - Exiting Gracefully."
+        Write-Output "Desired version of '$flywayVersion' already installed. No Changes Required - Exiting Gracefully."
         Exit
     }
 } else {
-    Write-Host "Flyway is not installed. Proceeding with installation."
+    Write-Host "Flyway is not installed. Proceeding with installation of Flyway version: $flywayVersion"
 }
 
 # Stop Running Flyway Processes Before Installation
@@ -101,22 +112,24 @@ $ExtractPath = "$flywayInstallDirectory"
 if (-Not (Test-Path $ExtractPath)) {
     # Create the directory if it doesn't exist
     New-Item $ExtractPath -ItemType Directory
-    Write-Host "Folder Created successfully"
+    Write-Host "Folder Path '$ExtractPath' Created successfully"
 } else {
-    Write-Host "Folder Exists"
+    Write-Host "Folder Path '$ExtractPath' Already Exists"
 }
 
 # Ensure that the Flyway Temp extraction directory exists
 if (-Not (Test-Path $TempExtractPath)) {
     # Create the directory if it doesn't exist
     New-Item $TempExtractPath -ItemType Directory
-    Write-Host "Folder Created successfully"
+    Write-Host "Folder Path '$TempExtractPath' Created successfully"
 } else {
-    Write-Host "Folder Exists"
+    Write-Host "Folder Path '$TempExtractPath' Already Exists"
 }
 
 $ProgressPreference = 'SilentlyContinue'
+Write-Host "Downloading Flyway Version: $flywayVersion"
 Invoke-WebRequest -Uri $Url -OutFile $DownloadZipFile -UseBasicParsing
+Write-Host "Extracting Flyway files to temporary location"
 Expand-Archive -Path $DownloadZipFile -DestinationPath $TempExtractPath -Force
 
 if (-Not (Test-Path "$TempExtractPath\\flyway-$flywayVersion")) {
@@ -124,20 +137,50 @@ if (-Not (Test-Path "$TempExtractPath\\flyway-$flywayVersion")) {
     Exit 1
 }
 
-# Atomic Directory Swap
+# Atomic Directory Swap with Fallback
+Write-Output "Replacing old Flyway installation..."
 $ExtractPathOld = "$ExtractPath-Old"
+$renameSucceeded = $false
 if (Test-Path $ExtractPath) {
     if (Test-Path $ExtractPathOld) {
+        Write-Host "Removing temporary files from '$ExtractPathOld'"
         Remove-Item -Path $ExtractPathOld -Recurse -Force
     }
-    Rename-Item -Path $ExtractPath -NewName $ExtractPathOld -Force
+    try {
+        Write-Host "Attempting to rename active Flyway CLI location from '$ExtractPath' to '$ExtractPathOld'"
+        Rename-Item -Path $ExtractPath -NewName $ExtractPathOld -Force
+        $renameSucceeded = $true
+    } catch {
+        Write-Warning "Failed to rename $ExtractPath to $ExtractPathOld. Access denied. Attempting to override existing files instead."
+    }
 }
 
-# Move the extracted files from the temp folder to the correct path
-Move-Item -Path "$TempExtractPath\\flyway-$flywayVersion\\*" -Destination "$ExtractPath" -Force
+if ($renameSucceeded) {
+    Write-Host "Moving Flyway Version $flywayVersion files to $ExtractPath"
+    Move-Item -Path "$TempExtractPath\\flyway-$flywayVersion\\*" -Destination "$ExtractPath" -Force
+} else {
+    Write-Host "Moving extracted Flyway Version $flywayVersion files to $ExtractPath"
+    Get-ChildItem -Path "$TempExtractPath\\flyway-$flywayVersion" -Recurse | ForEach-Object {
+        $relativePath = $_.FullName.Substring(("$TempExtractPath\\flyway-$flywayVersion").Length).TrimStart('\')
+        $dest = Join-Path $ExtractPath $relativePath
+
+        if (!(Test-Path (Split-Path -Parent $dest))) {
+            New-Item -ItemType Directory -Path (Split-Path -Parent $dest) -Force | Out-Null
+        }
+
+        if (Test-Path $dest) {
+            Remove-Item -Path $dest -Recurse -Force
+        }
+
+        Move-Item -Path $_.FullName -Destination $dest -Force
+    }
+}
 
 # Cleanup
-Remove-Item -Path $ExtractPathOld -Recurse -Force
+Write-Output "Cleaning up temporary files..."
+if (Test-Path $ExtractPathOld) {
+    Remove-Item -Path $ExtractPathOld -Recurse -Force
+}
 Remove-Item -Path "$TempExtractPath" -Recurse -Force
 
 # Update PATH with Flyway CLI Path
@@ -154,14 +197,14 @@ function Update-PathVariable {
     $updateSuccess = $false
 
     try {
-        # Attempt to update the preferred PATH
-        [System.Environment]::SetEnvironmentVariable(
-            'Path',
-            "$FlywayInstallDirectory;$([System.Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::$PreferredTarget))",
-            [System.EnvironmentVariableTarget]::$PreferredTarget
-        )
-        $updateSuccess = $true
-        Write-Host "Flyway CLI added to $PreferredTarget Environment Variable PATH successfully."
+        $currentPath = [System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::$PreferredTarget)
+        if ($null -ne $currentPath) {
+            [System.Environment]::SetEnvironmentVariable('Path', "$FlywayInstallDirectory;$currentPath", [System.EnvironmentVariableTarget]::$PreferredTarget)
+            $updateSuccess = $true
+            Write-Host "Flyway CLI added to $PreferredTarget Environment Variable PATH successfully."
+        } else {
+            Write-Warning "Unable to retrieve $PreferredTarget PATH. Skipping update."
+        }
     } catch {
         Write-Warning "Failed to update $PreferredTarget PATH. Error: $_"
         Write-Warning "Elevate Agent/Runner to local admin to set Machine PATH if required"
