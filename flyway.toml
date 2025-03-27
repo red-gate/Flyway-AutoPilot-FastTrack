@@ -1,33 +1,33 @@
 id = "97ea357d-2613-4415-b434-775478105625"
-name = "AutoPilot - FastTrack"
+name = "Autopilot - FastTrack"
 databaseType = "SqlServer"
 
-
 [environments.development]
-url = "jdbc:sqlserver://localhost;databaseName=AutoPilotDev;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
-schemas = [ ]
+url = "jdbc:sqlserver://localhost;databaseName=AutopilotDev;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 displayName = "Development database"
 
 [environments.shadow]
-url = "jdbc:sqlserver://localhost;databaseName=AutoPilotShadow;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutopilotShadow;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 displayName = "Shadow database"
 provisioner = "clean"
 
 [environments.Prod]
-url = "jdbc:sqlserver://localhost;databaseName=AutoPilotProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutopilotProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+schemas = [ "dbo", "Customers", "Logistics", "Operation", "Sales"]
 displayName = "Production Database"
 
 [environments.Test]
-url = "jdbc:sqlserver://localhost;databaseName=AutoPilotTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutopilotTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+schemas = [ "dbo", "Customers", "Logistics", "Operation", "Sales"]
 displayName = "Test database"
 
 [environments.Check]
-url = "jdbc:sqlserver://localhost;databaseName=AutoPilotCheck;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutopilotCheck;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 displayName = "Check (Reporting) database"
 provisioner = "clean"
 
 [environments.Build]
-url = "jdbc:sqlserver://localhost;databaseName=AutoPilotBuild;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutopilotBuild;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 displayName = "Build database"
 provisioner = "clean"
 
@@ -39,9 +39,13 @@ validateMigrationNaming = true
 defaultSchema = "dbo"
 baselineOnMigrate = true
 baselineVersion = "001"
-errorOverrides = ["S0001:0:I-"]
-sqlserver.clean.mode = "all"
-sqlserver.clean.schemas.exclude = ["ExampleSchema1", "ExampleSchema2"] 
+errorOverrides = [ "S0001:0:I-" ]
+
+[flyway.sqlserver.clean]
+mode = "all"
+
+[flyway.sqlserver.clean.schemas]
+exclude = [ "ExampleSchema1", "ExampleSchema2" ]
 
 [flywayDesktop]
 developmentEnvironment = "development"
