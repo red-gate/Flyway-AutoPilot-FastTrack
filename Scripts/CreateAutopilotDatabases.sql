@@ -1,6 +1,6 @@
 -- ===========================
 -- Script Name: CreateAutopilotDatabases.sql
--- Version: 1.0.1
+-- Version: 1.0.2
 -- Author: Redgate Software Ltd
 -- Last Updated: 2025-03-17
 -- Description: Flyway Autopilot FastTrack Database Setup Script
@@ -734,30 +734,6 @@ GO
 SET TRANSACTION ISOLATION LEVEL Serializable
 GO
 BEGIN TRANSACTION
-
-PRINT(N'Drop constraints from [Sales].[OrderAuditLog]')
-ALTER TABLE [Sales].[OrderAuditLog] NOCHECK CONSTRAINT [FK__OrderAudi__Order__4316F928]
-
-PRINT(N'Drop constraints from [Logistics].[EmployeeTerritories]')
-ALTER TABLE [Logistics].[EmployeeTerritories] NOCHECK CONSTRAINT [FK_EmployeeTerritories_Employees]
-ALTER TABLE [Logistics].[EmployeeTerritories] NOCHECK CONSTRAINT [FK_EmployeeTerritories_Territories]
-
-PRINT(N'Drop constraints from [Sales].[Territories]')
-ALTER TABLE [Sales].[Territories] NOCHECK CONSTRAINT [FK_Territories_Region]
-
-PRINT(N'Drop constraints from [Sales].[Orders]')
-ALTER TABLE [Sales].[Orders] NOCHECK CONSTRAINT [FK_Orders_Customers]
-ALTER TABLE [Sales].[Orders] NOCHECK CONSTRAINT [FK_Orders_Employees]
-ALTER TABLE [Sales].[Orders] NOCHECK CONSTRAINT [FK_Orders_Shippers]
-
-PRINT(N'Drop constraints from [Sales].[CustomersFeedback]')
-ALTER TABLE [Sales].[CustomersFeedback] NOCHECK CONSTRAINT [FK__Customers__Custo__286302EC]
-
-PRINT(N'Drop constraints from [Logistics].[MaintenanceLog]')
-ALTER TABLE [Logistics].[MaintenanceLog] NOCHECK CONSTRAINT [FK__Maintenan__Fligh__30F848ED]
-
-PRINT(N'Drop constraints from [Operation].[Employees]')
-ALTER TABLE [Operation].[Employees] NOCHECK CONSTRAINT [FK_Employees_Employees]
 
 PRINT(N'Add rows to [Logistics].[Flight]')
 SET IDENTITY_INSERT [Logistics].[Flight] ON
