@@ -13,12 +13,10 @@ provisioner = "clean"
 
 [environments.Prod]
 url = "jdbc:sqlserver://localhost;databaseName=AutopilotProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
-schemas = [ "dbo", "Customers", "Logistics", "Operation", "Sales"]
 displayName = "Production Database"
 
 [environments.Test]
 url = "jdbc:sqlserver://localhost;databaseName=AutopilotTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
-schemas = [ "dbo", "Customers", "Logistics", "Operation", "Sales"]
 displayName = "Test database"
 
 [environments.Check]
@@ -36,7 +34,7 @@ locations = [ "filesystem:migrations" ]
 mixed = true
 outOfOrder = true
 validateMigrationNaming = true
-defaultSchema = "dbo"
+defaultSchema = "Customers"
 baselineOnMigrate = true
 baselineVersion = "001"
 errorOverrides = [ "S0001:0:I-" ]
