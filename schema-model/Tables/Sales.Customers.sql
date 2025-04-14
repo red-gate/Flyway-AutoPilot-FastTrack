@@ -10,8 +10,7 @@ CREATE TABLE [Sales].[Customers]
 [PostalCode] [nvarchar] (10) NULL,
 [Country] [nvarchar] (15) NULL,
 [Phone] [nvarchar] (24) NULL,
-[Fax] [nvarchar] (24) NULL,
-[Twitter] [nchar] (10) NULL
+[Fax] [nvarchar] (24) NULL
 )
 GO
 ALTER TABLE [Sales].[Customers] ADD CONSTRAINT [PK_Customers] PRIMARY KEY CLUSTERED ([CustomerID])
