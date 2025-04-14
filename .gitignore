@@ -1,2 +1,2 @@
 .github/workflows/testing.yml
-.github/schema-model/RedGateDatabaseInfo.xml
+schema-model/RedGateDatabaseInfo.xml
