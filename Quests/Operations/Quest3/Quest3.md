@@ -1,3 +1,5 @@
+**RUN THE SQL SCRIPT FIRST TO CREATE THE NEEDED QUEST ITEMS**
+
 **Scenario**:
 The `Customers.Customer` table stores `Phone` and `Address` information directly, but this data should be normalized into a separate table to support multiple phone numbers and addresses for a single customer.
 

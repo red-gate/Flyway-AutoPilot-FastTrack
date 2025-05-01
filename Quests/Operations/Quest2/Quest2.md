@@ -1,3 +1,5 @@
+**RUN THE SQL SCRIPT FIRST TO CREATE THE NEEDED QUEST ITEMS**
+
 **Scenario**:
 The `Customers.CustomerFeedback` table is growing too large. Split the `Comments` column into a separate table called `CustomerFeedbackComments`.
 

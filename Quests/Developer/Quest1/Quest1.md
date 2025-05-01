@@ -1,3 +1,5 @@
+**RUN THE SQL SCRIPT FIRST TO CREATE THE NEEDED QUEST ITEMS**
+
 # Quest 1: Fixing Broken Dependencies  
 
 ## Scenario  
