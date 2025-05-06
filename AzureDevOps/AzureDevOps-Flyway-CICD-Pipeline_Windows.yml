@@ -2,9 +2,10 @@
 
 # ===========================
 # Pipeline Name: AzureDevOps-Flyway-CICD-Pipeline_Windows.yml
-# Version: 1.0.0
+# Version: 1.0.1
 # Author: Redgate Software Ltd
-# Last Updated: 2025-03-17
+# Last Updated: 2025-05-06
+# Last Update Notes: Disabled Flyway Pipelines by default
 # Description: Azure DevOps YAML Pipeline for Windows Runners
 # ===========================
 
@@ -85,7 +86,7 @@ variables:
   FLYWAY_INSTALL_DIRECTORY: "C:\\FlywayCLI\\" # The path on the agent machine where Flyway CLI will be installed
 
   # Optional: Side Quest #2 - Using the Flyway Pipeline Integration - https://flyway.red-gate.com/ For More Details
-  FLYWAY_PUBLISH_RESULT: "true" # Set this value to true to enable Flyway Pipelines and track your releases centrally!
+  FLYWAY_PUBLISH_RESULT: "false" # Set this value to true to enable Flyway Pipelines and track your releases centrally!
   FLYWAY_DRIFT_ON_MIGRATE: "true" # Set this value to true to enable Flyway Pipelines drift detection and track your drift centrally!
 
 ### End of Pipeline Variables - No further changes required below this line for default workflow ###
