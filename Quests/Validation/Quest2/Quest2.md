@@ -1,3 +1,5 @@
+**RUN THE SQL SCRIPT FIRST TO CREATE THE NEEDED QUEST ITEMS**
+
 **Scenario**:
 Ensure all flights in the `Inventory.Flight` table have a positive number of `AvailableSeats`.
 

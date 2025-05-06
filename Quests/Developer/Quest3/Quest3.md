@@ -1,3 +1,5 @@
+**RUN THE SQL SCRIPT FIRST TO CREATE THE NEEDED QUEST ITEMS**
+
 **Scenario**:
 The `Customers.Customer` table needs a new column to track the date when a customer joined the loyalty program.
 

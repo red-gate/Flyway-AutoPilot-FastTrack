@@ -1,3 +1,5 @@
+**WE HAVE PROVIDED THE NEEDED SQL FOR THE CALL BACK SCRIPT**
+
 **Scenario**:
 You need Flyway to perform an additional operation AFTER the clean command is finished during the Build stage.
 

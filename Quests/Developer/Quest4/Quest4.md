@@ -1,3 +1,5 @@
+**RUN THE SQL SCRIPT FIRST TO CREATE THE NEEDED QUEST ITEMS**
+
 **Scenario**:
 The `Sales.CustomerOrdersView` needs to include the ticket quantity (`TicketQuantity`) from the `Sales.Orders` table.
 

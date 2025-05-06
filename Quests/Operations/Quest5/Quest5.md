@@ -1,3 +1,5 @@
+**RUN THE SQL SCRIPT FIRST TO CREATE THE NEEDED QUEST ITEMS**
+
 **Scenario**:
 Queries on the `Inventory.Flight` table often calculate the flight duration (`ArrivalTime - DepartureTime`). To optimize performance, a computed column should be added for this value, with an index to support frequent lookups.
 

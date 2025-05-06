@@ -1,3 +1,5 @@
+**RUN THE SQL SCRIPT FIRST TO CREATE THE NEEDED QUEST ITEMS**
+
 **Scenario**:
 The `Sales.OrderAuditLog` table references `Sales.Orders`, but when an order is deleted, its associated audit logs remain, causing data inconsistencies. To prevent this, a cascading delete should be implemented.
 
