@@ -1,0 +1,58 @@
+{
+  "individualResults" : [ {
+    "timestamp" : "2025-07-08T12:23:49.4913667",
+    "operation" : "changes",
+    "exception" : null,
+    "licenseFailed" : false,
+    "onlyInSource" : [ ],
+    "onlyInTarget" : [ ],
+    "differences" : [ ],
+    "database" : "AutopilotTest"
+  }, {
+    "timestamp" : "2025-07-08T12:23:49.4913667",
+    "operation" : "drift",
+    "exception" : null,
+    "licenseFailed" : false,
+    "onlyInSource" : [ ],
+    "onlyInTarget" : [ {
+      "objectType" : "Table",
+      "name" : "BeccaTest",
+      "schema" : "dbo",
+      "definitionBefore" : null,
+      "definitionAfter" : "CREATE TABLE [dbo].[BeccaTest]\r\n(\r\n[Test] [int] NULL\r\n)\r\nGO\r\n"
+    }, {
+      "objectType" : "Table",
+      "name" : "PlugNPlay",
+      "schema" : "dbo",
+      "definitionBefore" : null,
+      "definitionAfter" : "CREATE TABLE [dbo].[PlugNPlay]\r\n(\r\n[FirstTest] [int] NULL,\r\n[test] [nchar] (10) NULL\r\n)\r\nGO\r\n"
+    }, {
+      "objectType" : "Table",
+      "name" : "demoplug",
+      "schema" : "dbo",
+      "definitionBefore" : null,
+      "definitionAfter" : "CREATE TABLE [dbo].[demoplug]\r\n(\r\n[TEST] [int] NULL\r\n)\r\nGO\r\n"
+    }, {
+      "objectType" : "Table",
+      "name" : "huxtest",
+      "schema" : "dbo",
+      "definitionBefore" : null,
+      "definitionAfter" : "CREATE TABLE [dbo].[huxtest]\r\n(\r\n[Test] [int] NULL,\r\n[ID] [nchar] (10) NULL\r\n)\r\nGO\r\n"
+    }, {
+      "objectType" : "Table",
+      "name" : "plugindemo",
+      "schema" : "dbo",
+      "definitionBefore" : null,
+      "definitionAfter" : "CREATE TABLE [dbo].[plugindemo]\r\n(\r\n[Test] [int] NULL\r\n)\r\nGO\r\n"
+    }, {
+      "objectType" : "Table",
+      "name" : "tom",
+      "schema" : "dbo",
+      "definitionBefore" : null,
+      "definitionAfter" : "CREATE TABLE [dbo].[tom]\r\n(\r\n[TEST] [int] NULL\r\n)\r\nGO\r\n"
+    } ],
+    "differences" : [ ],
+    "database" : "AutopilotTest",
+    "driftDetected" : true
+  } ]
+}

@@ -25,9 +25,5 @@ CREATE NONCLUSTERED INDEX [ProductsOrder_Details] ON [Sales].[Order Details] ([P
 GO
 ALTER TABLE [Sales].[Order Details] ADD CONSTRAINT [FK_Order_Details_Orders] FOREIGN KEY ([OrderID]) REFERENCES [Sales].[Orders] ([OrderID])
 GO
-ALTER TABLE [Sales].[Order Details] ADD CONSTRAINT [FK_Order_Details_Products] FOREIGN KEY ([ProductID]) REFERENCES [Operation].[Products] ([ProductID])
-GO
 ALTER TABLE [Sales].[Order Details] NOCHECK CONSTRAINT [FK_Order_Details_Orders]
-GO
-ALTER TABLE [Sales].[Order Details] NOCHECK CONSTRAINT [FK_Order_Details_Products]
 GO
