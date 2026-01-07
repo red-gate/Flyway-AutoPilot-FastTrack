@@ -1,12 +1,7 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<!--
-SQL Compare
-SQL Compare
-Version:15.2.1.24235-->
-<NamedFilter version="1" type="SQLCompareFilter">
-  <!--This filter can be loaded using the SQL Compare UI or used with a SQL Compare command line session using the /filter switch-->
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<NamedFilter type="SQLCompareFilter" version="1">
   <FilterName>Filter</FilterName>
-  <Filter version="1" type="DifferenceFilter">
+  <Filter type="DifferenceFilter" version="1">
     <FilterCaseSensitive>False</FilterCaseSensitive>
     <Filters version="1">
       <None version="1">
@@ -15,15 +10,15 @@ Version:15.2.1.24235-->
       </None>
       <Assembly version="1">
         <Include>True</Include>
-        <Expression />
+        <Expression/>
       </Assembly>
       <AsymmetricKey version="1">
         <Include>True</Include>
-        <Expression />
+        <Expression/>
       </AsymmetricKey>
       <Certificate version="1">
         <Include>True</Include>
-        <Expression />
+        <Expression/>
       </Certificate>
       <Contract version="1">
         <Include>True</Include>
@@ -63,19 +58,19 @@ Version:15.2.1.24235-->
       </MessageType>
       <PartitionFunction version="1">
         <Include>True</Include>
-        <Expression />
+        <Expression/>
       </PartitionFunction>
       <PartitionScheme version="1">
         <Include>True</Include>
-        <Expression />
+        <Expression/>
       </PartitionScheme>
       <Queue version="1">
         <Include>True</Include>
         <Expression>TRUE</Expression>
       </Queue>
       <Role version="1">
-        <Include>False</Include>
-        <Expression />
+        <Include>True</Include>
+        <Expression>TRUE</Expression>
       </Role>
       <Route version="1">
         <Include>True</Include>
@@ -103,11 +98,11 @@ Version:15.2.1.24235-->
       </Sequence>
       <Service version="1">
         <Include>True</Include>
-        <Expression />
+        <Expression/>
       </Service>
       <ServiceBinding version="1">
         <Include>True</Include>
-        <Expression />
+        <Expression/>
       </ServiceBinding>
       <StoredProcedure version="1">
         <Include>True</Include>
@@ -115,7 +110,7 @@ Version:15.2.1.24235-->
       </StoredProcedure>
       <SymmetricKey version="1">
         <Include>True</Include>
-        <Expression />
+        <Expression/>
       </SymmetricKey>
       <Synonym version="1">
         <Include>True</Include>
@@ -127,7 +122,7 @@ Version:15.2.1.24235-->
       </Table>
       <User version="1">
         <Include>True</Include>
-        <Expression />
+        <Expression/>
       </User>
       <UserDefinedType version="1">
         <Include>True</Include>
