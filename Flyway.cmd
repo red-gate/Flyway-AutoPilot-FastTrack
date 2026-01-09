@@ -1,2 +1,0 @@
-flyway info check -code -dryrun -check.majorRules="" -check.majorTolerance="0" -installedBy="$(Build.BuildId)" -reportEnabled=true -environment=target -errorOverrides=S0001:0:I- -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)" -workingDirectory="$(WORKING_DIRECTORY)"
-flyway clean migrate info -check.majorRules="" -check.majorTolerance="0" -installedBy="$(Build.BuildId)" -reportEnabled=true -environment=target -errorOverrides=S0001:0:I- -email="$(FLYWAY_EMAIL)" -token="$(FLYWAY_TOKEN)" -workingDirectory="$(WORKING_DIRECTORY)"  
