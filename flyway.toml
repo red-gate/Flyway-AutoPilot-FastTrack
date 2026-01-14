@@ -3,35 +3,31 @@ name = "Autopilot - FastTrack"
 databaseType = "SqlServer"
 
 [environments.development]
-url = "jdbc:sqlserver://US-LT-ANDREWP\\MSSQLSERVER01;databaseName=AutopilotDev;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutopilotDev;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 displayName = "Development database"
 
 [environments.shadow]
-url = "jdbc:sqlserver://US-LT-ANDREWP\\MSSQLSERVER01;databaseName=AutopilotShadow;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutopilotShadow;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 displayName = "Shadow database"
 provisioner = "clean"
 
 [environments.Prod]
-url = "jdbc:sqlserver://US-LT-ANDREWP\\MSSQLSERVER01;databaseName=AutopilotProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutopilotProd;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 displayName = "Production Database"
 
 [environments.Test]
-url = "jdbc:sqlserver://US-LT-ANDREWP\\MSSQLSERVER01;databaseName=AutopilotTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutopilotTest;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 displayName = "Test database"
 
 [environments.Check]
-url = "jdbc:sqlserver://US-LT-ANDREWP\\MSSQLSERVER01;databaseName=AutopilotCheck;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutopilotCheck;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 displayName = "Check (Reporting) database"
 provisioner = "clean"
 
 [environments.Build]
-url = "jdbc:sqlserver://US-LT-ANDREWP\\MSSQLSERVER01;databaseName=AutopilotBuild;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;databaseName=AutopilotBuild;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 displayName = "Build database"
 provisioner = "clean"
-
-[environments.test2]
-url = "jdbc:sqlserver://US-LT-ANDREWP;instanceName=MSSQLSERVER01;databaseName=Test2;encrypt=mandatory;integratedSecurity=true;trustServerCertificate=true"
-provisioner = "create-database"
 
 [flyway]
 locations = [ "filesystem:migrations" ]
@@ -46,20 +42,19 @@ errorOverrides = [ "S0001:0:I-" ]
 [flyway.sqlserver.clean]
 mode = "all"
 
-  [flyway.sqlserver.clean.schemas]
-  exclude = [ "ExampleSchema1", "ExampleSchema2" ]
+[flyway.sqlserver.clean.schemas]
+exclude = [ "ExampleSchema1", "ExampleSchema2" ]
 
 [flywayDesktop]
 developmentEnvironment = "development"
 shadowEnvironment = "shadow"
 schemaModel = "./schema-model"
 
-  [flywayDesktop.generate]
-  undoScripts = true
+[flywayDesktop.generate]
+undoScripts = true
 
-[redgateCompare]
-  [redgateCompare.sqlserver]
-  filterFile = "Filter.scpf"
+[redgateCompare.sqlserver]
+filterFile = "Filter.scpf"
 
 [redgateCompare.sqlserver.options.behavior]
 addCreateOrAlterForRerunnableScripts = false
@@ -150,15 +145,3 @@ dropPrimaryKeysIndexesAndUniqueConstraints = false
 reseedIdentityColumns = false
 skipIntegrityChecksForForeignKeys = false
 transportClrDataTypesAsBinary = false
-
-  [[redgateCompare.staticDataTables]]
-  schema = "Logistics"
-  table = "EmployeeTerritories"
-
-  [[redgateCompare.staticDataTables]]
-  schema = "Operation"
-  table = "Categories"
-
-  [[redgateCompare.staticDataTables]]
-  schema = "Logistics"
-  table = "Region"
